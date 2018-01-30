@@ -38,6 +38,9 @@ class Frontend {
             window.addEventListener('mouseover', this.onMouseOver.bind(this));
             window.addEventListener('mouseup', this.onMouseUp.bind(this));
             window.addEventListener('resize', this.onResize.bind(this));
+            window.addEventListener('touchstart', this.onTouchStart.bind(this));
+            window.addEventListener('touchmove', this.onTouchMove.bind(this));
+            window.addEventListener('touchend', this.onTouchEnd.bind(this));
 
             chrome.runtime.onMessage.addListener(this.onBgMessage.bind(this));
         } catch (e) {
@@ -92,6 +95,50 @@ class Frontend {
         }
     }
 
+    onTouchStart(e) {
+        this.searchClear();
+    }
+
+    onTouchMove(e) {
+        if (!this.options.general.enable) {
+            return;
+        }
+
+        const touch = e.touches[0];
+        const point = {x: touch.clientX, y: touch.clientY};
+        const highlight = async () => {
+            try {
+                if (this.options.scanning.selectText) {
+                    const textSource = docRangeFromPoint(point);
+                    textSource.setEndOffset(1);
+                    textSource.select();
+                }
+            } catch (e) {
+                //
+            }
+        }
+
+        highlight();
+    }
+
+    onTouchEnd(e) {
+        if (!this.options.general.enable) {
+            return;
+        }
+
+        const touch = e.changedTouches[0];
+        const point = {x: touch.clientX, y: touch.clientY};
+        const search = async () => {
+            try {
+                await this.searchAt(point);
+            } catch (e) {
+                this.onError(e);
+            }
+        };
+
+        search();
+    }
+
     onMouseDown(e) {
         this.mousePosLast = {x: e.clientX, y: e.clientY};
         this.popupTimerClear();
@@ -130,7 +177,9 @@ class Frontend {
     }
 
     onResize() {
-        this.searchClear();
+        if (!this.options.scanning.ignoreResize) {
+            this.searchClear();
+        }
     }
 
     onBgMessage({action, params}, sender, callback) {

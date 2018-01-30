@@ -204,6 +204,7 @@ function optionsSetDefaults(options) {
             selectText: true,
             alphanumeric: true,
             autoHideResults: false,
+            ignoreResize: false,
             delay: 20,
             length: 10,
             modifier: 'shift'

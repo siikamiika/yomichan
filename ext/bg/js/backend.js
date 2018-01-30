@@ -22,13 +22,20 @@ class Backend {
         this.translator = new Translator();
         this.anki = new AnkiNull();
         this.options = null;
+        this.platform = null;
     }
 
     async prepare() {
+        await chrome.runtime.getPlatformInfo((info) => {
+            this.platform = info.os;
+        });
+
         await this.translator.prepare();
         await apiOptionsSet(await optionsLoad());
 
-        chrome.commands.onCommand.addListener(this.onCommand.bind(this));
+        if (this.platform != 'android') {
+            chrome.commands.onCommand.addListener(this.onCommand.bind(this));
+        }
         chrome.runtime.onMessage.addListener(this.onMessage.bind(this));
 
         if (this.options.general.showGuide) {
@@ -39,14 +46,16 @@ class Backend {
     onOptionsUpdated(options) {
         this.options = utilIsolate(options);
 
-        if (!options.general.enable) {
-            chrome.browserAction.setBadgeBackgroundColor({color: '#555555'});
-            chrome.browserAction.setBadgeText({text: 'off'});
-        } else if (!dictConfigured(options)) {
-            chrome.browserAction.setBadgeBackgroundColor({color: '#f0ad4e'});
-            chrome.browserAction.setBadgeText({text: '!'});
-        } else {
-            chrome.browserAction.setBadgeText({text: ''});
+        if (this.platform != 'android') {
+            if (!options.general.enable) {
+                chrome.browserAction.setBadgeBackgroundColor({color: '#555555'});
+                chrome.browserAction.setBadgeText({text: 'off'});
+            } else if (!dictConfigured(options)) {
+                chrome.browserAction.setBadgeBackgroundColor({color: '#f0ad4e'});
+                chrome.browserAction.setBadgeText({text: '!'});
+            } else {
+                chrome.browserAction.setBadgeText({text: ''});
+            }
         }
 
         if (options.anki.enable) {
