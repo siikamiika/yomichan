@@ -196,6 +196,13 @@ class TextScanner {
         throw new Error('Override me');
     }
 
+    onCopy() {
+        const range = document.getSelection().getRangeAt(0);
+        const textSource = new TextSourceRange(range, '', null);
+        this.search(textSource, 'mouse');
+    }
+
+
     onError(error) {
         logError(error, false);
     }
@@ -251,7 +258,8 @@ class TextScanner {
             [this.node, 'mousedown', this.onMouseDown.bind(this)],
             [this.node, 'mousemove', this.onMouseMove.bind(this)],
             [this.node, 'mouseover', this.onMouseOver.bind(this)],
-            [this.node, 'mouseout', this.onMouseOut.bind(this)]
+            [this.node, 'mouseout', this.onMouseOut.bind(this)],
+            [this.node, 'copy', this.onCopy.bind(this)]
         ];
     }
 
@@ -303,23 +311,27 @@ class TextScanner {
                 return;
             }
 
-            try {
-                this.pendingLookup = true;
-                const result = await this.onSearchSource(textSource, cause);
-                if (result !== null) {
-                    this.textSourceCurrent = textSource;
-                    if (this.options.scanning.selectText) {
-                        textSource.select();
-                    }
-                }
-                this.pendingLookup = false;
-            } finally {
-                if (textSource !== null) {
-                    textSource.cleanup();
-                }
-            }
+            await this.search(textSource, cause);
         } catch (e) {
             this.onError(e);
+        }
+    }
+
+    async search(textSource, cause) {
+        try {
+            this.pendingLookup = true;
+            const result = await this.onSearchSource(textSource, cause);
+            if (result !== null) {
+                this.textSourceCurrent = textSource;
+                if (this.options.scanning.selectText) {
+                    textSource.select();
+                }
+            }
+            this.pendingLookup = false;
+        } finally {
+            if (textSource !== null) {
+                textSource.cleanup();
+            }
         }
     }
 

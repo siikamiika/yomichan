@@ -73,7 +73,8 @@ class QueryParser extends TextScanner {
             [this.node, 'mousedown', this.onMouseDown.bind(this)],
             [this.node, 'mousemove', this.onMouseMove.bind(this)],
             [this.node, 'mouseover', this.onMouseOver.bind(this)],
-            [this.node, 'mouseout', this.onMouseOut.bind(this)]
+            [this.node, 'mouseout', this.onMouseOut.bind(this)],
+            [this.node, 'copy', this.onCopy.bind(this)]
         ];
     }
 
