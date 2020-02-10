@@ -254,6 +254,9 @@ class DisplaySearch extends Display {
     async updateOptions(options) {
         await super.updateOptions(options);
         this.queryParser.setOptions(this.options);
+
+        document.documentElement.dataset.enableMecabParser = this.options.parsing.enableMecabParser;
+        document.documentElement.dataset.enableScanningParser = this.options.parsing.enableScanningParser;
     }
 
     isWanakanaEnabled() {

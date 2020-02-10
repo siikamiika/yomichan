@@ -140,6 +140,14 @@ html:root[data-yomichan-page=search][data-search-mode=popup] .search-input {
     display: none;
 }
 
+html:root[data-yomichan-page=search][data-search-mode=popup][data-enable-mecab-parser=false][data-enable-scanning-parser=false] .query-parser {
+    display: none;
+}
+
+html:root[data-yomichan-page=search][data-search-mode=popup][data-enable-mecab-parser=false][data-enable-scanning-parser=false] .search-top-separator {
+    display: none;
+}
+
 
 /*
  * Entries
