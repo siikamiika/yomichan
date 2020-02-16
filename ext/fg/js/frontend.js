@@ -209,6 +209,17 @@ class Frontend extends TextScanner {
         return this._lastShowPromise;
     }
 
+    _showPopupContentIframe(frameId, viewportDimensions, elementRectJson, writingMode, type, details) {
+        if (this.popup.isProxy()) { return; }
+        const elementRect = Frontend._convertJsonRectToDOMRect(this.popup, elementRectJson);
+        this._lastShowPromise = this.popup.showContent(
+            elementRect,
+            writingMode,
+            type,
+            details
+        );
+    }
+
     _updateContentScale() {
         const {popupScalingFactor, popupScaleRelativeToPageZoom, popupScaleRelativeToVisualViewport} = this.options.general;
         let contentScale = popupScalingFactor;
@@ -236,6 +247,17 @@ class Frontend extends TextScanner {
         const visualViewport = window.visualViewport;
         return visualViewport !== null && typeof visualViewport === 'object' ? visualViewport.scale : 1.0;
     }
+
+    static _convertJsonRectToDOMRect(popup, jsonRect) {
+        let x = jsonRect.x;
+        let y = jsonRect.y;
+        if (popup.parent !== null) {
+            const popupRect = popup.parent.getContainerRect();
+            x += popupRect.x;
+            y += popupRect.y;
+        }
+        return new DOMRect(x, y, jsonRect.width, jsonRect.height);
+    }
 }
 
 Frontend._windowMessageHandlers = new Map([
@@ -244,5 +266,6 @@ Frontend._windowMessageHandlers = new Map([
 ]);
 
 Frontend._runtimeMessageHandlers = new Map([
-    ['popupSetVisibleOverride', (self, {visible}) => { self.popup.setVisibleOverride(visible); }]
+    ['popupSetVisibleOverride', (self, {visible}) => { self.popup.setVisibleOverride(visible); }],
+    ['popupIframeShowContent', (self, {frameId, viewportDimensions, elementRectJson, writingMode, type, details}) => { self._showPopupContentIframe(frameId, viewportDimensions, elementRectJson, writingMode, type, details); }]
 ]);
