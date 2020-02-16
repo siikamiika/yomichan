@@ -38,6 +38,7 @@ class TextScanner {
         this.preventNextMouseDown = false;
         this.preventNextClick = false;
         this.preventScroll = false;
+        this.previousPosition = null;
     }
 
     onMouseOver(e) {
@@ -47,6 +48,8 @@ class TextScanner {
     }
 
     onMouseMove(e) {
+        const {clientX, clientY} = e;
+        this.previousPosition = {x: clientX, y: clientY};
         this.scanTimerClear();
 
         if (this.pendingLookup || DOM.isMouseButtonDown(e, 'primary')) {
@@ -70,7 +73,7 @@ class TextScanner {
                 }
             }
 
-            await this.searchAt(e.clientX, e.clientY, 'mouse');
+            await this.searchAt(clientX, clientY, 'mouse');
         };
 
         search();
@@ -115,6 +118,10 @@ class TextScanner {
             e.stopPropagation();
             return false;
         }
+    }
+
+    onScroll() {
+        this.previousPosition = null;
     }
 
     onTouchStart(e) {
@@ -252,7 +259,8 @@ class TextScanner {
             [this.node, 'mousedown', this.onMouseDown.bind(this)],
             [this.node, 'mousemove', this.onMouseMove.bind(this)],
             [this.node, 'mouseover', this.onMouseOver.bind(this)],
-            [this.node, 'mouseout', this.onMouseOut.bind(this)]
+            [this.node, 'mouseout', this.onMouseOut.bind(this)],
+            [this.node, 'scroll', this.onScroll.bind(this)]
         ];
     }
 

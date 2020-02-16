@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*global apiGetZoom, apiOptionsGet, apiTermsFind, apiKanjiFind, docSentenceExtract, TextScanner*/
+/*global apiGetZoom, apiOptionsGet, apiTermsFind, apiKanjiFind, apiGetEnvironmentInfo, docSentenceExtract, TextScanner*/
 
 class Frontend extends TextScanner {
     constructor(popup, ignoreNodes) {
@@ -194,6 +194,11 @@ class Frontend extends TextScanner {
         super.onSearchClear(changeFocus);
     }
 
+    onSearchClearIframe(changeFocus) {
+        if (this.popup.isProxy()) { return; }
+        return this.onSearchClear(changeFocus);
+    }
+
     getOptionsContext() {
         this.optionsContext.url = this.popup.url;
         return this.optionsContext;
@@ -209,9 +214,19 @@ class Frontend extends TextScanner {
         return this._lastShowPromise;
     }
 
-    _showPopupContentIframe(frameId, viewportDimensions, elementRectJson, writingMode, type, details) {
+    async _showPopupContentIframe(frameId, viewportDimensions, elementRectJson, writingMode, type, details) {
         if (this.popup.isProxy()) { return; }
-        const elementRect = Frontend._convertJsonRectToDOMRect(this.popup, elementRectJson);
+        const matchingIframeRect = await this._findIframe(
+            viewportDimensions.width,
+            viewportDimensions.height
+        );
+        if (matchingIframeRect === null) { return; }
+        const elementRect = new DOMRect(
+            matchingIframeRect.x + elementRectJson.x,
+            matchingIframeRect.y + elementRectJson.y,
+            elementRectJson.width,
+            elementRectJson.height
+        );
         this._lastShowPromise = this.popup.showContent(
             elementRect,
             writingMode,
@@ -243,20 +258,47 @@ class Frontend extends TextScanner {
         }
     }
 
+    async _findIframe(width, height) {
+        const {browser} = await apiGetEnvironmentInfo();
+
+        let matchingIframeRect = null;
+        const iframeRects = Array.from(document.querySelectorAll('iframe:not(.yomichan-float)'))
+            .map((iframe) => iframe.getBoundingClientRect());
+        for (const iframeRect of iframeRects) {
+            const isOutOfBounds = iframeRect.bottom < 0 ||
+                (window.innerHeight - iframeRect.top) < 0 ||
+                iframeRect.right < 0 ||
+                (document.body.clientWidth - iframeRect.left) < 0;
+            if (isOutOfBounds) { continue; }
+
+            if (this.previousPosition !== null && browser !== 'firefox-mobile') {
+                const distanceX = Math.min(
+                    Math.abs(iframeRect.left - this.previousPosition.x),
+                    Math.abs(iframeRect.right - this.previousPosition.x)
+                );
+                const distanceY = Math.min(
+                    Math.abs(iframeRect.top - this.previousPosition.y),
+                    Math.abs(iframeRect.bottom - this.previousPosition.y)
+                );
+                const isInside = this.previousPosition.x >= iframeRect.left &&
+                    this.previousPosition.x <= iframeRect.right &&
+                    this.previousPosition.y >= iframeRect.top &&
+                    this.previousPosition.y <= iframeRect.bottom;
+                if (!isInside && (distanceX > 10 && distanceY > 10)) { continue; } // max 10 pixel distance from iframe rect
+            }
+
+            if (iframeRect.height === height && iframeRect.width === width) {
+                matchingIframeRect = iframeRect;
+                break;
+            }
+        }
+
+        return matchingIframeRect;
+    }
+
     static _getVisualViewportScale() {
         const visualViewport = window.visualViewport;
         return visualViewport !== null && typeof visualViewport === 'object' ? visualViewport.scale : 1.0;
-    }
-
-    static _convertJsonRectToDOMRect(popup, jsonRect) {
-        let x = jsonRect.x;
-        let y = jsonRect.y;
-        if (popup.parent !== null) {
-            const popupRect = popup.parent.getContainerRect();
-            x += popupRect.x;
-            y += popupRect.y;
-        }
-        return new DOMRect(x, y, jsonRect.width, jsonRect.height);
     }
 }
 
@@ -267,5 +309,6 @@ Frontend._windowMessageHandlers = new Map([
 
 Frontend._runtimeMessageHandlers = new Map([
     ['popupSetVisibleOverride', (self, {visible}) => { self.popup.setVisibleOverride(visible); }],
-    ['popupIframeShowContent', (self, {frameId, viewportDimensions, elementRectJson, writingMode, type, details}) => { self._showPopupContentIframe(frameId, viewportDimensions, elementRectJson, writingMode, type, details); }]
+    ['popupIframeShowContent', (self, {frameId, viewportDimensions, elementRectJson, writingMode, type, details}) => { self._showPopupContentIframe(frameId, viewportDimensions, elementRectJson, writingMode, type, details); }],
+    ['popupIframeHide', (self) => { self.onSearchClearIframe(true); }]
 ]);

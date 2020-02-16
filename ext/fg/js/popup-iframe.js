@@ -49,7 +49,7 @@ class PopupIframe {
     }
 
     hide(_changeFocus) {
-        // NOP
+        apiForward('popupIframeHide');
     }
 
     async isVisible() {
