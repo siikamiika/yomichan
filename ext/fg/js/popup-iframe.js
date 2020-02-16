@@ -74,7 +74,15 @@ class PopupIframe {
         apiForward('popupIframeShowContent', {frameId, viewportDimensions, elementRectJson, writingMode, type, details});
     }
 
+    setCustomCss(_css) {
+        // NOP
+    }
+
     clearAutoPlayTimer() {
+        // NOP
+    }
+
+    setContentScale() {
         // NOP
     }
 
