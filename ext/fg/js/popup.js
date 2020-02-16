@@ -103,9 +103,9 @@ class Popup {
         return false;
     }
 
-    async showContent(elementRect, writingMode, type=null, details=null) {
+    async showContent(elementRect, writingMode, type=null, details=null, fullWidth=false) {
         if (this._options === null) { throw new Error('Options not assigned'); }
-        await this._show(elementRect, writingMode);
+        await this._show(elementRect, writingMode, fullWidth);
         if (type === null) { return; }
         this._invokeApi('setContent', {type, details});
     }
@@ -242,12 +242,11 @@ class Popup {
         });
     }
 
-    async _show(elementRect, writingMode) {
+    async _show(elementRect, writingMode, fullWidth) {
         await this._inject();
 
         const optionsGeneral = this._options.general;
         const container = this._container;
-        const containerRect = container.getBoundingClientRect();
         const getPosition = (
             writingMode === 'horizontal-tb' || optionsGeneral.popupVerticalTextPosition === 'default' ?
             Popup._getPositionForHorizontalText :
@@ -256,23 +255,23 @@ class Popup {
 
         const viewport = Popup._getViewport(optionsGeneral.popupScaleRelativeToVisualViewport);
         const scale = this._contentScale;
-        const scaleRatio = this._containerSizeContentScale === null ? 1.0 : scale / this._containerSizeContentScale;
         this._containerSizeContentScale = scale;
         let [x, y, width, height, below] = getPosition(
             elementRect,
-            Math.max(containerRect.width * scaleRatio, optionsGeneral.popupWidth * scale),
-            Math.max(containerRect.height * scaleRatio, optionsGeneral.popupHeight * scale),
+            optionsGeneral.popupWidth * scale,
+            optionsGeneral.popupHeight * scale,
             viewport,
             scale,
             optionsGeneral,
             writingMode
         );
 
-        const fullWidth = (optionsGeneral.popupDisplayMode === 'full-width');
+        fullWidth = fullWidth || (optionsGeneral.popupDisplayMode === 'full-width');
+
         container.classList.toggle('yomichan-float-full-width', fullWidth);
         container.classList.toggle('yomichan-float-above', !below);
 
-        if (optionsGeneral.popupDisplayMode === 'full-width') {
+        if (fullWidth) {
             x = viewport.left;
             y = below ? viewport.bottom - height : viewport.top;
             width = viewport.right - viewport.left;

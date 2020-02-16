@@ -220,18 +220,20 @@ class Frontend extends TextScanner {
             viewportDimensions.width,
             viewportDimensions.height
         );
-        if (matchingIframeRect === null) { return; }
+        const {x=0, y=0} = matchingIframeRect || {};
         const elementRect = new DOMRect(
-            matchingIframeRect.x + elementRectJson.x,
-            matchingIframeRect.y + elementRectJson.y,
+            x + elementRectJson.x,
+            y + elementRectJson.y,
             elementRectJson.width,
             elementRectJson.height
         );
+        const fullWidth = matchingIframeRect === null;
         this._lastShowPromise = this.popup.showContent(
             elementRect,
             writingMode,
             type,
-            details
+            details,
+            fullWidth
         );
     }
 
