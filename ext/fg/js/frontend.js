@@ -286,10 +286,11 @@ class Frontend extends TextScanner {
                     this.previousPosition.x <= iframeRect.right &&
                     this.previousPosition.y >= iframeRect.top &&
                     this.previousPosition.y <= iframeRect.bottom;
-                if (!isInside && (distanceX > 10 && distanceY > 10)) { continue; } // max 10 pixel distance from iframe rect
+                if (!isInside && (distanceX > 30 && distanceY > 30)) { continue; } // max 30 pixel distance from iframe rect
             }
 
-            if (iframeRect.height === height && iframeRect.width === width) {
+            // nested iframes without any other content can have their pixels rounded off
+            if (Math.round(iframeRect.height) === Math.round(height) && Math.round(iframeRect.width) === Math.round(width)) {
                 matchingIframeRect = iframeRect;
                 break;
             }
