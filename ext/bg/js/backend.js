@@ -212,34 +212,44 @@ class Backend {
         }
     }
 
-    async getOptions(optionsContext) {
+    async getAllMatchingOptions(optionsContext) {
         if (this.isPreparedPromise !== null) {
             await this.isPreparedPromise;
         }
-        return this.getOptionsSync(optionsContext);
+        return this.getAllMatchingOptionsSync(optionsContext);
+    }
+
+    async getOptions(optionsContext) {
+        return (await this.getAllMatchingOptions(optionsContext))[0];
+    }
+
+    getAllMatchingOptionsSync(optionsContext) {
+        return this.getAllMatchingProfilesSync(optionsContext).map((p) => p.options);
     }
 
     getOptionsSync(optionsContext) {
-        return this.getProfileSync(optionsContext).options;
+        return this.getAllMatchingOptionsSync(optionsContext)[0];
     }
 
-    getProfileSync(optionsContext) {
+    getAllMatchingProfilesSync(optionsContext) {
         const profiles = this.options.profiles;
         if (typeof optionsContext.index === 'number') {
-            return profiles[optionsContext.index];
+            return [profiles[optionsContext.index]];
         }
-        const profile = this.getProfileFromContext(optionsContext);
-        return profile !== null ? profile : this.options.profiles[this.options.profileCurrent];
+        const matchingProfiles = Array.from(this.getProfilesFromContext(optionsContext));
+        if (matchingProfiles.length === 0) {
+            return [this.options.profiles[this.options.profileCurrent]];
+        }
+        return matchingProfiles;
     }
 
-    getProfileFromContext(optionsContext) {
+    *getProfilesFromContext(optionsContext) {
         for (const profile of this.options.profiles) {
             const conditionGroups = profile.conditionGroups;
             if (conditionGroups.length > 0 && Backend.testConditionGroups(conditionGroups, optionsContext)) {
-                return profile;
+                yield profile;
             }
         }
-        return null;
     }
 
     static testConditionGroups(conditionGroups, data) {
