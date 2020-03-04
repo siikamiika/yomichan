@@ -237,22 +237,29 @@ class Backend {
     }
 
     getProfile(optionsContext) {
-        const profiles = this.options.profiles;
-        if (typeof optionsContext.index === 'number') {
-            return profiles[optionsContext.index];
-        }
-        const profile = this.getProfileFromContext(optionsContext);
-        return profile !== null ? profile : this.options.profiles[this.options.profileCurrent];
+        return this._getProfilesFromContext(optionsContext).next().value;
     }
 
-    getProfileFromContext(optionsContext) {
-        for (const profile of this.options.profiles) {
+    *_getProfilesFromContext(optionsContext) {
+        const {profiles, profileCurrent} = this.options;
+
+        if (typeof optionsContext.index === 'number') {
+            yield profiles[optionsContext.index];
+            return;
+        }
+
+        let contextHasResults = false;
+        for (const profile of profiles) {
             const conditionGroups = profile.conditionGroups;
             if (conditionGroups.length > 0 && Backend.testConditionGroups(conditionGroups, optionsContext)) {
-                return profile;
+                contextHasResults = true;
+                yield profile;
             }
         }
-        return null;
+
+        if (!contextHasResults) {
+            yield profiles[profileCurrent];
+        }
     }
 
     static testConditionGroups(conditionGroups, data) {
