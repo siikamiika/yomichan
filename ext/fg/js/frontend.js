@@ -124,6 +124,9 @@ class Frontend extends TextScanner {
         this.setOptions(await apiOptionsGet(this.getOptionsContext()));
         await this.popup.setOptions(this.options);
         this._updateContentScale();
+        if (this.textSourceCurrent !== null && this.causeCurrent !== null) {
+            await this.onSearchSource(this.textSourceCurrent, this.causeCurrent);
+        }
     }
 
     async onSearchSource(textSource, cause) {
