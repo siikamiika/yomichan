@@ -211,7 +211,6 @@ class Popup {
                 Popup._listenForDisplayPrepareCompleted(uniqueId, resolve);
 
                 this._invokeApi('prepare', {
-                    options: this._options,
                     popupInfo: {
                         id: this._id,
                         depth: this._depth,
