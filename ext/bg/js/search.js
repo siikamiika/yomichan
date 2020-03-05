@@ -284,12 +284,6 @@ class DisplaySearch extends Display {
         return this.wanakanaEnable !== null && this.wanakanaEnable.checked;
     }
 
-    getOptionsContext() {
-        return {
-            id: this.profileSwitcher.globalProfileIndex
-        };
-    }
-
     setQuery(query) {
         const interpretedQuery = this.isWanakanaEnabled() ? window.wanakana.toKana(query) : query;
         this.query.value = interpretedQuery;
