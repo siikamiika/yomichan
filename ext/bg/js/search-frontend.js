@@ -18,9 +18,7 @@
 
 /*global apiOptionsGet*/
 
-async function searchFrontendSetup() {
-    await yomichan.prepare();
-
+async function searchFrontendSetup(parentUniqueId) {
     const optionsContext = {
         depth: 0,
         url: window.location.href
@@ -33,7 +31,7 @@ async function searchFrontendSetup() {
         ignoreNodes.push('.source-text', '.source-text *');
     }
 
-    window.frontendInitializationData = {depth: 1, ignoreNodes, proxy: false};
+    window.frontendInitializationData = {depth: 1, ignoreNodes, proxy: false, parentUniqueId};
 
     const scriptSrcs = [
         '/mixed/js/text-scanner.js',

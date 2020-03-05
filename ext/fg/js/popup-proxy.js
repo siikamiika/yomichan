@@ -49,6 +49,21 @@ class PopupProxy {
         return true;
     }
 
+    async getUniqueId() {
+        const id = await this._getPopupId();
+        return await this._invokeHostApi('getUniqueId', {id});
+    }
+
+    async setUniqueId(uniqueId) {
+        const id = await this._getPopupId();
+        return await this._invokeHostApi('setUniqueId', {id, uniqueId});
+    }
+
+    async getParentUniqueId() {
+        const id = await this._getPopupId();
+        return await this._invokeHostApi('getParentUniqueId', {id});
+    }
+
     async setOptions(options) {
         const id = await this._getPopupId();
         return await this._invokeHostApi('setOptions', {id, options});

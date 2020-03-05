@@ -55,7 +55,7 @@ class SettingsPopupPreview {
         const popupHost = new PopupProxyHost();
         await popupHost.prepare();
 
-        this.popup = popupHost.getOrCreatePopup();
+        this.popup = await popupHost.getOrCreatePopup();
         this.popup.setChildrenSupported(false);
 
         this.popupSetCustomOuterCssOld = this.popup.setCustomOuterCss;

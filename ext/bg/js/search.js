@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*global apiOptionsSet, apiTermsFind, Display, QueryParser, ClipboardMonitor*/
+/*global apiOptionsSet, apiTermsFind, Display, QueryParser, ClipboardMonitor, searchFrontendSetup*/
 
 class DisplaySearch extends Display {
     constructor() {
@@ -106,6 +106,8 @@ class DisplaySearch extends Display {
             this.clipboardMonitor.onClipboardText = this.onExternalSearchUpdate.bind(this);
 
             this.updateSearchButton();
+
+            await searchFrontendSetup(this.uniqueId);
         } catch (e) {
             this.onError(e);
         }

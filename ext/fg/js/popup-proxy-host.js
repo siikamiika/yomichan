@@ -19,11 +19,12 @@
 /*global apiFrameInformationGet, FrontendApiReceiver, Popup*/
 
 class PopupProxyHost {
-    constructor() {
+    constructor(parentUniqueId) {
         this._popups = new Map();
         this._nextId = 0;
         this._apiReceiver = null;
         this._frameIdPromise = null;
+        this._parentUniqueId = parentUniqueId;
     }
 
     // Public functions
@@ -36,6 +37,9 @@ class PopupProxyHost {
         this._apiReceiver = new FrontendApiReceiver(`popup-proxy-host#${frameId}`, new Map([
             ['getOrCreatePopup', this._onApiGetOrCreatePopup.bind(this)],
             ['setOptions', this._onApiSetOptions.bind(this)],
+            ['setUniqueId', this._onApiSetUniqueId.bind(this)],
+            ['getUniqueId', this._onApiGetUniqueId.bind(this)],
+            ['getParentUniqueId', this._onApiGetParentUniqueId.bind(this)],
             ['hide', this._onApiHide.bind(this)],
             ['isVisible', this._onApiIsVisibleAsync.bind(this)],
             ['setVisibleOverride', this._onApiSetVisibleOverride.bind(this)],
@@ -47,7 +51,7 @@ class PopupProxyHost {
         ]));
     }
 
-    getOrCreatePopup(id=null, parentId=null) {
+    async getOrCreatePopup(id=null, parentId=null) {
         // Find by existing id
         if (id !== null) {
             const popup = this._popups.get(id);
@@ -77,7 +81,8 @@ class PopupProxyHost {
 
         // Create new popup
         const depth = (parent !== null ? parent.depth + 1 : 0);
-        const popup = new Popup(id, depth, this._frameIdPromise);
+        const parentUniqueId = parent !== null ? await parent.getUniqueId() : this._parentUniqueId;
+        const popup = new Popup(id, depth, this._frameIdPromise, parentUniqueId);
         if (parent !== null) {
             popup.setParent(parent);
         }
@@ -88,7 +93,7 @@ class PopupProxyHost {
     // Message handlers
 
     async _onApiGetOrCreatePopup({id, parentId}) {
-        const popup = this.getOrCreatePopup(id, parentId);
+        const popup = await this.getOrCreatePopup(id, parentId);
         return {
             id: popup.id
         };
@@ -97,6 +102,21 @@ class PopupProxyHost {
     async _onApiSetOptions({id, options}) {
         const popup = this._getPopup(id);
         return await popup.setOptions(options);
+    }
+
+    async _onApiSetUniqueId({id, uniqueId}) {
+        const popup = this._getPopup(id);
+        return popup.setUniqueId(uniqueId);
+    }
+
+    async _onApiGetUniqueId({id}) {
+        const popup = this._getPopup(id);
+        return popup.getUniqueId();
+    }
+
+    async _onApiGetParentUniqueId({id}) {
+        const popup = this._getPopup(id);
+        return popup.getParentUniqueId();
     }
 
     async _onApiHide({id, changeFocus}) {

@@ -24,6 +24,10 @@ DisplayGenerator, WindowScroll, DisplayContext, DOM*/
 
 class Display {
     constructor(spinner, container) {
+        this.uniqueId = null;
+        this.parentUniqueId = null;
+        this.neighborStructure = new Map();
+
         this.spinner = spinner;
         this.container = container;
         this.definitions = [];
@@ -149,15 +153,49 @@ class Display {
             }]
         ]);
 
+        this._runtimeMessageHandlers = new Map([
+            ['neighborStructureUpdate', ({neighbors}) => { this.onNeighborStructureUpdate(neighbors); }]
+        ]);
+
         this.setInteractive(true);
     }
 
-    async prepare(options=null) {
+    async prepare(options=null, parentUniqueId=null) {
         await yomichan.prepare();
+        this.uniqueId = yomichan.generateId(16);
+        this.parentUniqueId = parentUniqueId;
         const displayGeneratorPromise = this.displayGenerator.prepare();
         const updateOptionsPromise = this.updateOptions(options);
         await Promise.all([displayGeneratorPromise, updateOptionsPromise]);
+
+        const thisNeighbor = {id: this.uniqueId, parent: this.parentUniqueId};
+        apiForward('neighborStructureUpdate', {neighbors: [thisNeighbor]});
+        chrome.runtime.onMessage.addListener(this.onRuntimeMessage.bind(this));
         yomichan.on('optionsUpdated', () => this.updateOptions(null));
+    }
+
+    onRuntimeMessage({action, params}, sender, callback) {
+        const handler = this._runtimeMessageHandlers.get(action);
+        if (typeof handler !== 'function') { return false; }
+
+        const result = handler(params, sender);
+        callback(result);
+        return false;
+    }
+
+    onNeighborStructureUpdate(neighbors) {
+        let updated = false;
+        for (const neighbor of neighbors) {
+            if (!this.neighborStructure.has(neighbor.id)) {
+                this.neighborStructure.set(neighbor.id, neighbor);
+                updated = true;
+            }
+        }
+        if (updated) {
+            const updatedNeighbors = Array.from(this.neighborStructure.values());
+            console.log(updatedNeighbors);
+            apiForward('neighborStructureUpdate', {neighbors: updatedNeighbors});
+        }
     }
 
     onError(_error) {

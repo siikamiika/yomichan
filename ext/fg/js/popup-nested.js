@@ -20,7 +20,7 @@
 
 let popupNestedInitialized = false;
 
-async function popupNestedInitialize(id, depth, parentFrameId, url) {
+async function popupNestedInitialize(id, depth, parentFrameId, url, parentUniqueId) {
     if (popupNestedInitialized) {
         return;
     }
@@ -39,7 +39,7 @@ async function popupNestedInitialize(id, depth, parentFrameId, url) {
         ignoreNodes.push('.source-text', '.source-text *');
     }
 
-    window.frontendInitializationData = {id, depth, parentFrameId, ignoreNodes, url, proxy: true};
+    window.frontendInitializationData = {id, depth, parentFrameId, ignoreNodes, url, proxy: true, parentUniqueId};
 
     const scriptSrcs = [
         '/mixed/js/text-scanner.js',

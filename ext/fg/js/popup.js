@@ -19,11 +19,13 @@
 /*global apiInjectStylesheet, apiGetMessageToken*/
 
 class Popup {
-    constructor(id, depth, frameIdPromise) {
+    constructor(id, depth, frameIdPromise, parentUniqueId) {
         this._id = id;
         this._depth = depth;
         this._frameIdPromise = frameIdPromise;
         this._frameId = null;
+        this._uniqueId = null;
+        this._parentUniqueId = parentUniqueId;
         this._parent = null;
         this._child = null;
         this._childrenSupported = true;
@@ -79,6 +81,18 @@ class Popup {
     async setOptions(options) {
         this._options = options;
         this.updateTheme();
+    }
+
+    async setUniqueId(id) {
+        this._uniqueId = id;
+    }
+
+    async getUniqueId() {
+        return this._uniqueId;
+    }
+
+    async getParentUniqueId() {
+        return this._parentUniqueId;
     }
 
     hide(changeFocus) {
@@ -220,7 +234,8 @@ class Popup {
                     url: this.url,
                     childrenSupported: this._childrenSupported,
                     scale: this._contentScale,
-                    uniqueId
+                    uniqueId,
+                    parentUniqueId: this._parentUniqueId
                 });
             });
             this._observeFullscreen(true);

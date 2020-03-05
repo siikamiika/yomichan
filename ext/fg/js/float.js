@@ -48,7 +48,7 @@ class DisplayFloat extends Display {
             ['setContent', ({type, details}) => this.setContent(type, details)],
             ['clearAutoPlayTimer', () => this.clearAutoPlayTimer()],
             ['setCustomCss', ({css}) => this.setCustomCss(css)],
-            ['prepare', ({options, popupInfo, url, childrenSupported, scale, uniqueId}) => this.prepare(options, popupInfo, url, childrenSupported, scale, uniqueId)],
+            ['prepare', ({options, popupInfo, url, childrenSupported, scale, uniqueId, parentUniqueId}) => this.prepare(options, popupInfo, url, childrenSupported, scale, uniqueId, parentUniqueId)],
             ['setContentScale', ({scale}) => this.setContentScale(scale)]
         ]);
 
@@ -56,18 +56,18 @@ class DisplayFloat extends Display {
         window.addEventListener('message', this.onMessage.bind(this), false);
     }
 
-    async prepare(options, popupInfo, url, childrenSupported, scale, uniqueId) {
+    async prepare(options, popupInfo, url, childrenSupported, scale, uniqueId, parentUniqueId) {
         if (this._prepareInvoked) { return; }
         this._prepareInvoked = true;
 
-        await super.prepare(options);
+        await super.prepare(options, parentUniqueId);
 
         const {id, depth, parentFrameId} = popupInfo;
         this.optionsContext.depth = depth;
         this.optionsContext.url = url;
 
         if (childrenSupported) {
-            popupNestedInitialize(id, depth, parentFrameId, url);
+            popupNestedInitialize(id, depth, parentFrameId, url, this.uniqueId);
         }
 
         this.setContentScale(scale);

@@ -46,7 +46,8 @@ class Frontend extends TextScanner {
         ]);
 
         this._runtimeMessageHandlers = new Map([
-            ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }]
+            ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }],
+            ['neighborStructureUpdate', ({neighbors}) => { this.onNeighborStructureUpdate(neighbors); }]
         ]);
     }
 
@@ -94,6 +95,16 @@ class Frontend extends TextScanner {
         const result = handler(params, sender);
         callback(result);
         return false;
+    }
+
+    async onNeighborStructureUpdate(neighbors) {
+        if (await this.popup.getUniqueId() !== null) { return; }
+        for (const neighbor of neighbors) {
+            if (neighbor.parent === await this.popup.getParentUniqueId()) {
+                await this.popup.setUniqueId(neighbor.id);
+                break;
+            }
+        }
     }
 
     onOrphaned() {
