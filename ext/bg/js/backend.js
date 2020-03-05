@@ -56,6 +56,7 @@ class Backend {
             ['optionsGetFull', this._onApiOptionsGetFull.bind(this)],
             ['optionsSet', this._onApiOptionsSet.bind(this)],
             ['optionsSave', this._onApiOptionsSave.bind(this)],
+            ['profilesGetMatching', this._onApiProfilesGetMatching.bind(this)],
             ['kanjiFind', this._onApiKanjiFind.bind(this)],
             ['termsFind', this._onApiTermsFind.bind(this)],
             ['textParse', this._onApiTextParse.bind(this)],
@@ -212,28 +213,34 @@ class Backend {
     }
 
     getProfile(optionsContext) {
-        return this._getProfilesFromContext(optionsContext).next().value;
+        return this._getProfilesFromContext(optionsContext).next().value.profile;
+    }
+
+    getMatchingProfiles(optionsContext) {
+        return Array.from(this._getProfilesFromContext(optionsContext));
     }
 
     *_getProfilesFromContext(optionsContext) {
         const {profiles, profileCurrent} = this.options;
 
         if (typeof optionsContext.index === 'number') {
-            yield profiles[optionsContext.index];
+            yield {index: optionsContext.index, profile: profiles[optionsContext.index]};
             return;
         }
 
         let contextHasResults = false;
+        let profileIndex = 0;
         for (const profile of profiles) {
             const conditionGroups = profile.conditionGroups;
             if (conditionGroups.length > 0 && Backend.testConditionGroups(conditionGroups, optionsContext)) {
                 contextHasResults = true;
-                yield profile;
+                yield {index: profileIndex, profile};
             }
+            ++profileIndex;
         }
 
         if (!contextHasResults) {
-            yield profiles[profileCurrent];
+            yield {index: profileCurrent, profile: profiles[profileCurrent]};
         }
     }
 
@@ -354,6 +361,10 @@ class Backend {
         const options = this.getFullOptions();
         await optionsSave(options);
         this.onOptionsUpdated(source);
+    }
+
+    async _onApiProfilesGetMatching({optionsContext}) {
+        return this.getMatchingProfiles(optionsContext);
     }
 
     async _onApiKanjiFind({text, optionsContext}) {

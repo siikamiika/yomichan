@@ -37,6 +37,10 @@ function apiOptionsSave(source) {
     return _apiInvoke('optionsSave', {source});
 }
 
+function apiProfilesGetMatching(optionsContext) {
+    return _apiInvoke('profilesGetMatching', {optionsContext});
+}
+
 function apiTermsFind(text, details, optionsContext) {
     return _apiInvoke('termsFind', {text, details, optionsContext});
 }
