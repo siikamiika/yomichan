@@ -88,7 +88,7 @@ class DisplaySearch extends Display {
 
             document.documentElement.dataset.searchMode = mode;
 
-            if (this.options.general.enableWanakana === true) {
+            if (this.profileSwitcher.options.general.enableWanakana === true) {
                 this.wanakanaEnable.checked = true;
                 window.wanakana.bind(this.query);
             } else {
@@ -99,7 +99,7 @@ class DisplaySearch extends Display {
             this.onSearchQueryUpdated(this.query.value, false);
 
             if (mode !== 'popup') {
-                if (this.options.general.enableClipboardMonitor === true) {
+                if (this.profileSwitcher.options.general.enableClipboardMonitor === true) {
                     this.clipboardMonitorEnable.checked = true;
                     this.clipboardMonitor.start();
                 } else {
@@ -237,7 +237,7 @@ class DisplaySearch extends Display {
             this.setIntroVisible(!valid, animate);
             this.updateSearchButton();
             if (valid) {
-                const {definitions} = await apiTermsFind(query, details, this.optionsContext);
+                const {definitions} = await apiTermsFind(query, details, this.getOptionsContext());
                 this.setContent('terms', {definitions, context: {
                     focus: false,
                     disableHistory: true,
@@ -287,6 +287,7 @@ class DisplaySearch extends Display {
         await super.updateOptions();
         this.queryParser.setOptions(this.options);
         if (!this._isPrepared) { return; }
+
         const query = this.query.value;
         if (query) {
             this.setQuery(query);

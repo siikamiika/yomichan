@@ -21,6 +21,7 @@
  * DOM
  * DisplayContext
  * DisplayGenerator
+ * ProfileSwitcher
  * WindowScroll
  * apiAudioGetUri
  * apiDefinitionAdd
@@ -29,6 +30,7 @@
  * apiKanjiFind
  * apiNoteView
  * apiOptionsGet
+ * apiProfilesGetMatching
  * apiScreenshotGet
  * apiTermsFind
  * docRangeFromPoint
@@ -42,12 +44,14 @@ class Display {
         this.definitions = [];
         this.optionsContext = null;
         this.options = null;
+        this.profileSwitcher = null;
         this.context = null;
         this.index = 0;
         this.audioPlaying = null;
         this.audioFallback = null;
         this.audioSystem = new AudioSystem({getAudioUri: this._getAudioUri.bind(this)});
         this.styleNode = null;
+        this.optionsContext = null;
 
         this.eventListeners = new EventListenerCollection();
         this.persistentEventListeners = new EventListenerCollection();
@@ -238,7 +242,7 @@ class Display {
             const {textSource, definitions} = termLookupResults;
 
             const scannedElement = e.target;
-            const sentence = docSentenceExtract(textSource, this.options.anki.sentenceExt);
+            const sentence = docSentenceExtract(textSource, this.profileSwitcher.options.anki.sentenceExt);
 
             this.context.update({
                 index: this.entryIndexFind(scannedElement),
@@ -275,14 +279,14 @@ class Display {
         try {
             e.preventDefault();
 
-            const textSource = docRangeFromPoint(e.clientX, e.clientY, this.options.scanning.deepDomScan);
+            const textSource = docRangeFromPoint(e.clientX, e.clientY, this.profileSwitcher.options.scanning.deepDomScan);
             if (textSource === null) {
                 return false;
             }
 
             let definitions, length;
             try {
-                textSource.setEndOffset(this.options.scanning.length);
+                textSource.setEndOffset(this.profileSwitcher.options.scanning.length);
 
                 ({definitions, length} = await apiTermsFind(textSource.text(), {}, this.getOptionsContext()));
                 if (definitions.length === 0) {
@@ -311,7 +315,7 @@ class Display {
         this.audioPlay(
             this.definitions[index],
             // expressionIndex is used in audioPlay to detect result output mode
-            Math.max(expressionIndex, this.options.general.resultOutputMode === 'merge' ? 0 : -1),
+            Math.max(expressionIndex, this.profileSwitcher.options.general.resultOutputMode === 'merge' ? 0 : -1),
             index
         );
     }
@@ -373,10 +377,11 @@ class Display {
     }
 
     async updateOptions() {
-        this.options = await apiOptionsGet(this.getOptionsContext());
-        this.updateDocumentOptions(this.options);
-        this.updateTheme(this.options.general.popupTheme);
-        this.setCustomCss(this.options.general.customPopupCss);
+        this.profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
+        const options = this.profileSwitcher.options;
+        this.updateDocumentOptions(options);
+        this.updateTheme(options.general.popupTheme);
+        this.setCustomCss(options.general.customPopupCss);
     }
 
     updateDocumentOptions(options) {
@@ -453,7 +458,7 @@ class Display {
             this.addMultipleEventListeners('.action-view-note', 'click', this.onNoteView.bind(this));
             this.addMultipleEventListeners('.action-play-audio', 'click', this.onAudioPlay.bind(this));
             this.addMultipleEventListeners('.kanji-link', 'click', this.onKanjiLookup.bind(this));
-            if (this.options.scanning.enablePopupSearch) {
+            if (this.profileSwitcher.options.scanning.enablePopupSearch) {
                 this.addMultipleEventListeners('.term-glossary-item, .tag', 'mouseup', this.onGlossaryMouseUp.bind(this));
                 this.addMultipleEventListeners('.term-glossary-item, .tag', 'mousedown', this.onGlossaryMouseDown.bind(this));
                 this.addMultipleEventListeners('.term-glossary-item, .tag', 'mousemove', this.onGlossaryMouseMove.bind(this));
@@ -539,7 +544,7 @@ class Display {
             this.entrySetCurrent(index || 0);
         }
 
-        if (this.options.audio.enabled && this.options.audio.autoPlay) {
+        if (this.profileSwitcher.options.audio.enabled && this.profileSwitcher.options.audio.autoPlay) {
             this.autoPlayAudio();
         }
 
@@ -789,7 +794,7 @@ class Display {
                 this.audioPlaying = null;
             }
 
-            const sources = this.options.audio.sources;
+            const sources = this.profileSwitcher.options.audio.sources;
             let audio, source, info;
             try {
                 ({audio, source} = await this.audioSystem.getDefinitionAudio(expression, sources));
@@ -814,7 +819,7 @@ class Display {
 
             this.audioPlaying = audio;
             audio.currentTime = 0;
-            audio.volume = this.options.audio.volume / 100.0;
+            audio.volume = this.profileSwitcher.options.audio.volume / 100.0;
             audio.play();
         } catch (e) {
             this.onError(e);
@@ -824,7 +829,7 @@ class Display {
     }
 
     noteUsesScreenshot(mode) {
-        const optionsAnki = this.options.anki;
+        const optionsAnki = this.profileSwitcher.options.anki;
         const fields = (mode === 'kanji' ? optionsAnki.kanji : optionsAnki.terms).fields;
         for (const fieldValue of Object.values(fields)) {
             if (fieldValue.includes('{screenshot}')) {
@@ -839,7 +844,7 @@ class Display {
             await this.setPopupVisibleOverride(false);
             await promiseTimeout(1); // Wait for popup to be hidden.
 
-            const {format, quality} = this.options.anki.screenshot;
+            const {format, quality} = this.profileSwitcher.options.anki.screenshot;
             const dataUrl = await apiScreenshotGet({format, quality});
             if (!dataUrl || dataUrl.error) { return; }
 
@@ -850,7 +855,7 @@ class Display {
     }
 
     get firstExpressionIndex() {
-        return this.options.general.resultOutputMode === 'merge' ? 0 : -1;
+        return this.profileSwitcher.options.general.resultOutputMode === 'merge' ? 0 : -1;
     }
 
     setPopupVisibleOverride(visible) {

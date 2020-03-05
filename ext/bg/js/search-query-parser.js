@@ -105,9 +105,9 @@ class QueryParser extends TextScanner {
         ];
     }
 
-    setOptions(options) {
-        super.setOptions(options);
-        this.queryParser.dataset.termSpacing = `${options.parsing.termSpacing}`;
+    setOptions(profileSwitcher) {
+        super.setOptions(profileSwitcher);
+        this.queryParser.dataset.termSpacing = `${profileSwitcher.options.parsing.termSpacing}`;
     }
 
     refreshSelectedParser() {
