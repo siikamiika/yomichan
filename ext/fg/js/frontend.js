@@ -46,7 +46,8 @@ class Frontend extends TextScanner {
         ]);
 
         this._runtimeMessageHandlers = new Map([
-            ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }]
+            ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }],
+            ['profileChanged', ({profileIndex}) => { this.onProfileChanged(profileIndex); }]
         ]);
     }
 
@@ -127,6 +128,11 @@ class Frontend extends TextScanner {
         this.optionsContext.url = this.popup.url;
         const profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
         this.setOptions(profileSwitcher);
+        await this.onProfileChanged(0);
+    }
+
+    async onProfileChanged(profileIndex) {
+        this.profileSwitcher.setIndex(profileIndex);
         await this.popup.setOptions(this.profileSwitcher.options);
         this._updateContentScale();
         if (this.textSourceCurrent !== null && this.causeCurrent !== null) {
@@ -213,7 +219,7 @@ class Frontend extends TextScanner {
 
     getOptionsContext() {
         return {
-            id: this.profileSwitcher.globalProfileIndex
+            index: this.profileSwitcher.globalProfileIndex
         };
     }
 
