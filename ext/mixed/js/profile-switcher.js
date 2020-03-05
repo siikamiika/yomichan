@@ -35,6 +35,9 @@ class ProfileSwitcher {
     }
 
     setIndex(index) {
+        if (index >= this._profiles.length) {
+            throw new Error('Profile index is out of bounds');
+        }
         this._index = index;
     }
 
