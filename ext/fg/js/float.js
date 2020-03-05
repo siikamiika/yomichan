@@ -152,10 +152,6 @@ class DisplayFloat extends Display {
         handler(params);
     }
 
-    async updateOptions() {
-        await super.updateOptions();
-    }
-
     autoPlayAudio() {
         this.clearAutoPlayTimer();
         this.autoPlayAudioTimer = window.setTimeout(() => super.autoPlayAudio(), 400);

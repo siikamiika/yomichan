@@ -295,7 +295,6 @@ class DisplaySearch extends Display {
     async updateOptions() {
         await super.updateOptions();
         this.queryParser.setOptions(this.profileSwitcher);
-        this.onProfileChanged(0);
     }
 
     isWanakanaEnabled() {
