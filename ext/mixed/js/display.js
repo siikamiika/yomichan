@@ -155,9 +155,8 @@ class Display {
 
     async prepare() {
         await yomichan.prepare();
-        const displayGeneratorPromise = this.displayGenerator.prepare();
-        const updateOptionsPromise = this.updateOptions();
-        await Promise.all([displayGeneratorPromise, updateOptionsPromise]);
+        await this.displayGenerator.prepare();
+        await this.updateOptions();
         yomichan.on('optionsUpdated', () => this.updateOptions());
     }
 
@@ -356,19 +355,31 @@ class Display {
         }
     }
 
-    getOptionsContext() {
-        return {
-            id: this.profileSwitcher.globalProfileIndex
-        };
+    onProfileSelect(e) {
+        const select = e.target;
+        const profileIndex = select.value;
+        this.onProfileChanged(profileIndex);
     }
 
-    async updateOptions() {
-        this.profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
+    onProfileChanged(profileIndex) {
+        this.profileSwitcher.setIndex(profileIndex);
         const options = this.profileSwitcher.options;
         this.updateDocumentOptions(options);
         this.updateTheme(options.general.popupTheme);
         this.setCustomCss(options.general.customPopupCss);
         audioPrepareTextToSpeech(options);
+    }
+
+    getOptionsContext() {
+        return {
+            index: this.profileSwitcher.globalProfileIndex
+        };
+    }
+
+    async updateOptions() {
+        this.profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
+        this.onProfileChanged(0);
+        this.renderProfileSelect(this.profileSwitcher.getProfiles());
     }
 
     updateDocumentOptions(options) {
@@ -402,6 +413,15 @@ class Display {
         if (this.styleNode.parentNode !== parent) {
             parent.appendChild(this.styleNode);
         }
+    }
+
+    renderProfileSelect(profiles) {
+        const profileSelectContainer = document.querySelector('#profile-select');
+        profileSelectContainer.textContent = '';
+        if (profiles.length <= 1) { return; }
+        const profileSelect = this.displayGenerator.createProfileSelect(profiles, this.profileIndex);
+        profileSelect.addEventListener('change', this.onProfileSelect.bind(this));
+        profileSelectContainer.appendChild(profileSelect);
     }
 
     setInteractive(interactive) {
