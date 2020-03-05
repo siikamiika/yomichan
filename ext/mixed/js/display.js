@@ -357,7 +357,9 @@ class Display {
     }
 
     getOptionsContext() {
-        throw new Error('Override me');
+        return {
+            id: this.profileSwitcher.globalProfileIndex
+        };
     }
 
     async updateOptions() {
