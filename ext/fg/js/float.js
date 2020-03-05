@@ -16,12 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*global popupNestedInitialize, apiForward, apiGetMessageToken, Display*/
+/*global popupNestedInitialize, apiForward, apiGetMessageToken, Display, apiTermsFind*/
 
 class DisplayFloat extends Display {
     constructor() {
         super(document.querySelector('#spinner'), document.querySelector('#definitions'));
         this.autoPlayAudioTimer = null;
+
+        this._popupId = null;
 
         this.optionsContext = {
             depth: 0,
@@ -48,7 +50,7 @@ class DisplayFloat extends Display {
             ['setContent', ({type, details}) => this.setContent(type, details)],
             ['clearAutoPlayTimer', () => this.clearAutoPlayTimer()],
             ['setCustomCss', ({css}) => this.setCustomCss(css)],
-            ['prepare', ({options, popupInfo, url, childrenSupported, scale, uniqueId}) => this.prepare(options, popupInfo, url, childrenSupported, scale, uniqueId)],
+            ['prepare', ({options, popupInfo, url, childrenSupported, scale}) => this.prepare(options, popupInfo, url, childrenSupported, scale)],
             ['setContentScale', ({scale}) => this.setContentScale(scale)]
         ]);
 
@@ -56,13 +58,14 @@ class DisplayFloat extends Display {
         window.addEventListener('message', this.onMessage.bind(this), false);
     }
 
-    async prepare(options, popupInfo, url, childrenSupported, scale, uniqueId) {
+    async prepare(options, popupInfo, url, childrenSupported, scale) {
         if (this._prepareInvoked) { return; }
         this._prepareInvoked = true;
 
         await super.prepare(options);
 
         const {id, depth, parentFrameId} = popupInfo;
+        this._popupId = id;
         this.optionsContext.depth = depth;
         this.optionsContext.url = url;
 
@@ -72,7 +75,7 @@ class DisplayFloat extends Display {
 
         this.setContentScale(scale);
 
-        apiForward('popupPrepareCompleted', {uniqueId});
+        apiForward('popupPrepareCompleted', {}, this._popupId);
     }
 
     onError(error) {
@@ -139,8 +142,16 @@ class DisplayFloat extends Display {
         handler(params);
     }
 
-    getOptionsContext() {
-        return this.optionsContext;
+    setOptions(options) {
+        super.setOptions(options);
+        if (this.previousFullText) {
+            apiForward('setOptions', {options}, this._popupId);
+            apiTermsFind(this.previousFullText, {}, this.getOptionsContext()).then(({definitions}) => {
+                const context = this.context.context;
+                context.disableHistory = true;
+                this.setContent('terms', {definitions, context});
+            });
+        }
     }
 
     autoPlayAudio() {

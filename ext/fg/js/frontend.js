@@ -46,7 +46,8 @@ class Frontend extends TextScanner {
         ]);
 
         this._runtimeMessageHandlers = new Map([
-            ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }]
+            ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }],
+            ['setOptions', ({options}) => { this.setOptions(options); }]
         ]);
     }
 
@@ -87,7 +88,9 @@ class Frontend extends TextScanner {
         handler();
     }
 
-    onRuntimeMessage({action, params}, sender, callback) {
+    onRuntimeMessage({action, params, targetPopupId}, sender, callback) {
+        if (targetPopupId !== 'all' && targetPopupId !== this.popup.id) { return; }
+
         const handler = this._runtimeMessageHandlers.get(action);
         if (typeof handler !== 'function') { return false; }
 
@@ -124,9 +127,6 @@ class Frontend extends TextScanner {
         this.setOptions(await apiOptionsGet(this.getOptionsContext()));
         await this.popup.setOptions(this.options);
         this._updateContentScale();
-        if (this.textSourceCurrent !== null && this.causeCurrent !== null) {
-            await this.onSearchSource(this.textSourceCurrent, this.causeCurrent);
-        }
     }
 
     async onSearchSource(textSource, cause) {
@@ -134,13 +134,15 @@ class Frontend extends TextScanner {
 
         try {
             if (textSource !== null) {
+                this.setTextSourceScanLength(textSource, this.options.scanning.length);
+                const fullText = textSource.text();
                 results = (
                     await this.findTerms(textSource) ||
                     await this.findKanji(textSource)
                 );
                 if (results !== null) {
                     const focus = (cause === 'mouse');
-                    this.showContent(textSource, focus, results.definitions, results.type);
+                    this.showContent(textSource, fullText, focus, results.definitions, results.type);
                 }
             }
         } catch (e) {
@@ -160,13 +162,13 @@ class Frontend extends TextScanner {
         return results;
     }
 
-    showContent(textSource, focus, definitions, type) {
+    showContent(textSource, fullText, focus, definitions, type) {
         const sentence = docSentenceExtract(textSource, this.options.anki.sentenceExt);
         const url = window.location.href;
         this._showPopupContent(
             textSource,
             type,
-            {definitions, context: {sentence, url, focus, disableHistory: true}}
+            {definitions, context: {sentence, url, focus, disableHistory: true}, fullText}
         );
     }
 

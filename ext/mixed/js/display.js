@@ -18,7 +18,7 @@
 
 /*global docRangeFromPoint, docSentenceExtract
 apiKanjiFind, apiTermsFind, apiNoteView, apiOptionsGet, apiDefinitionsAddable, apiDefinitionAdd
-apiScreenshotGet, apiForward
+apiScreenshotGet, apiForward, apiProfilesGetMatching
 audioPrepareTextToSpeech, audioGetFromSources
 DisplayGenerator, WindowScroll, DisplayContext, DOM*/
 
@@ -28,12 +28,15 @@ class Display {
         this.container = container;
         this.definitions = [];
         this.options = null;
+        this.profiles = null;
+        this.profileIndex = 0;
         this.context = null;
         this.index = 0;
         this.audioPlaying = null;
         this.audioFallback = null;
         this.audioCache = new Map();
         this.styleNode = null;
+        this.previousFullText = null;
 
         this.eventListeners = new EventListenerCollection();
         this.persistentEventListeners = new EventListenerCollection();
@@ -154,9 +157,8 @@ class Display {
 
     async prepare(options=null) {
         await yomichan.prepare();
-        const displayGeneratorPromise = this.displayGenerator.prepare();
-        const updateOptionsPromise = this.updateOptions(options);
-        await Promise.all([displayGeneratorPromise, updateOptionsPromise]);
+        await this.displayGenerator.prepare();
+        await this.updateOptions(options);
         yomichan.on('optionsUpdated', () => this.updateOptions(null));
     }
 
@@ -355,16 +357,33 @@ class Display {
         }
     }
 
+    onProfileSelect(e) {
+        const select = e.target;
+        this.profileIndex = select.value;
+        this.setOptions(this.profiles[this.profileIndex].profile.options);
+    }
+
     getOptionsContext() {
-        throw new Error('Override me');
+        if (this.profiles !== null) {
+            const index = this.profiles[this.profileIndex].index;
+            return {index};
+        }
+        return this.optionsContext;
     }
 
     async updateOptions(options) {
         this.options = options ? options : await apiOptionsGet(this.getOptionsContext());
-        this.updateDocumentOptions(this.options);
-        this.updateTheme(this.options.general.popupTheme);
-        this.setCustomCss(this.options.general.customPopupCss);
-        audioPrepareTextToSpeech(this.options);
+        this.profiles = await apiProfilesGetMatching(this.optionsContext);
+        this.renderProfileSelect(this.profiles);
+        this.setOptions(this.options);
+    }
+
+    setOptions(options) {
+        this.options = options;
+        this.updateDocumentOptions(options);
+        this.updateTheme(options.general.popupTheme);
+        this.setCustomCss(options.general.customPopupCss);
+        audioPrepareTextToSpeech(options);
     }
 
     updateDocumentOptions(options) {
@@ -398,6 +417,15 @@ class Display {
         if (this.styleNode.parentNode !== parent) {
             parent.appendChild(this.styleNode);
         }
+    }
+
+    renderProfileSelect(profiles) {
+        const profileSelectContainer = document.querySelector('#profile-select');
+        profileSelectContainer.textContent = '';
+        if (profiles.length <= 1) { return; }
+        const profileSelect = this.displayGenerator.createProfileSelect(profiles, this.profileIndex);
+        profileSelect.addEventListener('change', this.onProfileSelect.bind(this));
+        profileSelectContainer.appendChild(profileSelect);
     }
 
     setInteractive(interactive) {
@@ -455,6 +483,10 @@ class Display {
     }
 
     async setContent(type, details) {
+        if (details.fullText) {
+            this.previousFullText = details.fullText;
+            delete details.fullText;
+        }
         const token = {}; // Unique identifier token
         this.setContentToken = token;
         try {
@@ -839,7 +871,7 @@ class Display {
     }
 
     setPopupVisibleOverride(visible) {
-        return apiForward('popupSetVisibleOverride', {visible});
+        return apiForward('popupSetVisibleOverride', {visible}, 'all');
     }
 
     setSpinnerVisible(visible) {

@@ -223,13 +223,17 @@ class DisplaySearch extends Display {
             this.setIntroVisible(!valid, animate);
             this.updateSearchButton();
             if (valid) {
-                const {definitions} = await apiTermsFind(query, details, this.optionsContext);
-                this.setContent('terms', {definitions, context: {
-                    focus: false,
-                    disableHistory: true,
-                    sentence: {text: query, offset: 0},
-                    url: window.location.href
-                }});
+                const {definitions} = await apiTermsFind(query, details, this.getOptionsContext());
+                this.setContent('terms', {
+                    definitions,
+                    context: {
+                        focus: false,
+                        disableHistory: true,
+                        sentence: {text: query, offset: 0},
+                        url: window.location.href
+                    },
+                    fullText: query
+                });
             } else {
                 this.container.textContent = '';
             }
@@ -272,8 +276,11 @@ class DisplaySearch extends Display {
     async updateOptions(options) {
         await super.updateOptions(options);
         this.queryParser.setOptions(this.options);
+    }
 
-        const query = this.query.value;
+    setOptions(options) {
+        super.setOptions(options);
+        const query = this.previousFullText;
         if (query) {
             this.setQuery(query);
             this.onSearchQueryUpdated(query, false);
@@ -282,10 +289,6 @@ class DisplaySearch extends Display {
 
     isWanakanaEnabled() {
         return this.wanakanaEnable !== null && this.wanakanaEnable.checked;
-    }
-
-    getOptionsContext() {
-        return this.optionsContext;
     }
 
     setQuery(query) {

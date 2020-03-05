@@ -37,6 +37,10 @@ function apiOptionsSave(source) {
     return _apiInvoke('optionsSave', {source});
 }
 
+function apiProfilesGetMatching(optionsContext) {
+    return _apiInvoke('profilesGetMatching', {optionsContext});
+}
+
 function apiTermsFind(text, details, optionsContext) {
     return _apiInvoke('termsFind', {text, details, optionsContext});
 }
@@ -81,8 +85,8 @@ function apiScreenshotGet(options) {
     return _apiInvoke('screenshotGet', {options});
 }
 
-function apiForward(action, params) {
-    return _apiInvoke('forward', {action, params});
+function apiForward(action, params, targetPopupId) {
+    return _apiInvoke('forward', {action, params, targetPopupId});
 }
 
 function apiFrameInformationGet() {
