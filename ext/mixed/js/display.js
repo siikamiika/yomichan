@@ -373,7 +373,9 @@ class Display {
     }
 
     getOptionsContext() {
-        return this.optionsContext;
+        return {
+            id: this.profileSwitcher.globalProfileIndex
+        };
     }
 
     async updateOptions() {
