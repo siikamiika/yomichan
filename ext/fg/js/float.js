@@ -23,6 +23,8 @@ class DisplayFloat extends Display {
         super(document.querySelector('#spinner'), document.querySelector('#definitions'));
         this.autoPlayAudioTimer = null;
 
+        this._popupId = null;
+
         this.optionsContext = {
             depth: 0,
             url: window.location.href
@@ -48,7 +50,7 @@ class DisplayFloat extends Display {
             ['setContent', ({type, details}) => this.setContent(type, details)],
             ['clearAutoPlayTimer', () => this.clearAutoPlayTimer()],
             ['setCustomCss', ({css}) => this.setCustomCss(css)],
-            ['prepare', ({popupInfo, url, childrenSupported, scale, uniqueId}) => this.prepare(popupInfo, url, childrenSupported, scale, uniqueId)],
+            ['prepare', ({popupInfo, url, childrenSupported, scale}) => this.prepare(popupInfo, url, childrenSupported, scale)],
             ['setContentScale', ({scale}) => this.setContentScale(scale)]
         ]);
 
@@ -56,11 +58,12 @@ class DisplayFloat extends Display {
         window.addEventListener('message', this.onMessage.bind(this), false);
     }
 
-    async prepare(popupInfo, url, childrenSupported, scale, uniqueId) {
+    async prepare(popupInfo, url, childrenSupported, scale) {
         if (this._prepareInvoked) { return; }
         this._prepareInvoked = true;
 
         const {id, depth, parentFrameId} = popupInfo;
+        this._popupId = id;
         this.optionsContext.depth = depth;
         this.optionsContext.url = url;
 
@@ -72,7 +75,7 @@ class DisplayFloat extends Display {
 
         this.setContentScale(scale);
 
-        apiForward('popupPrepareCompleted', {uniqueId});
+        apiForward('popupPrepareCompleted', {targetPopupId: this._popupId});
     }
 
     onError(error) {

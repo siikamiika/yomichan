@@ -207,8 +207,7 @@ class Popup {
             const parentFrameId = (typeof this._frameId === 'number' ? this._frameId : null);
             this._container.setAttribute('src', chrome.runtime.getURL('/fg/float.html'));
             this._container.addEventListener('load', () => {
-                const uniqueId = yomichan.generateId(32);
-                Popup._listenForDisplayPrepareCompleted(uniqueId, resolve);
+                this._listenForDisplayPrepareCompleted(resolve);
 
                 this._invokeApi('prepare', {
                     popupInfo: {
@@ -218,8 +217,7 @@ class Popup {
                     },
                     url: this.url,
                     childrenSupported: this._childrenSupported,
-                    scale: this._contentScale,
-                    uniqueId
+                    scale: this._contentScale
                 });
             });
             this._observeFullscreen(true);
@@ -360,23 +358,12 @@ class Popup {
         contentWindow.postMessage({action, params, token}, this._targetOrigin);
     }
 
-    static _getFullscreenElement() {
-        return (
-            document.fullscreenElement ||
-            document.msFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.webkitFullscreenElement ||
-            null
-        );
-    }
-
-    static _listenForDisplayPrepareCompleted(uniqueId, resolve) {
+    _listenForDisplayPrepareCompleted(resolve) {
         const runtimeMessageCallback = ({action, params}, sender, callback) => {
             if (
                 action === 'popupPrepareCompleted' &&
-                typeof params === 'object' &&
-                params !== null &&
-                params.uniqueId === uniqueId
+                isObject(params) &&
+                params.targetPopupId === this._id
             ) {
                 chrome.runtime.onMessage.removeListener(runtimeMessageCallback);
                 callback();
@@ -385,6 +372,16 @@ class Popup {
             }
         };
         chrome.runtime.onMessage.addListener(runtimeMessageCallback);
+    }
+
+    static _getFullscreenElement() {
+        return (
+            document.fullscreenElement ||
+            document.msFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.webkitFullscreenElement ||
+            null
+        );
     }
 
     static _getPositionForHorizontalText(elementRect, width, height, viewport, offsetScale, optionsGeneral) {
