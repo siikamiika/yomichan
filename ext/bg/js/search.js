@@ -283,16 +283,19 @@ class DisplaySearch extends Display {
         }
     }
 
-    async updateOptions() {
-        await super.updateOptions();
-        this.queryParser.setOptions(this.options);
-        if (!this._isPrepared) { return; }
-
+    onProfileChanged(profileIndex) {
+        super.onProfileChanged(profileIndex);
         const query = this.query.value;
         if (query) {
             this.setQuery(query);
             this.onSearchQueryUpdated(query, false);
         }
+    }
+
+    async updateOptions() {
+        await super.updateOptions();
+        this.queryParser.setOptions(this.profileSwitcher);
+        this.onProfileChanged(0);
     }
 
     isWanakanaEnabled() {

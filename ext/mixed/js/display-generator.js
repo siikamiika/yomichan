@@ -426,6 +426,23 @@ class DisplayGenerator {
         return node;
     }
 
+    createProfileSelect(profiles, currentProfileIndex) {
+        const select = document.createElement('select');
+
+        let profileIndex = 0;
+        for (const profile of profiles) {
+            const option = document.createElement('option');
+            option.textContent = profile.name;
+            option.value = profileIndex;
+            select.appendChild(option);
+            ++profileIndex;
+        }
+
+        select.selectedIndex = currentProfileIndex;
+
+        return select;
+    }
+
     _appendKanjiLinks(container, text) {
         let part = '';
         for (const c of text) {

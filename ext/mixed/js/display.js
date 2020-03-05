@@ -372,18 +372,30 @@ class Display {
         }
     }
 
+    onProfileSelect(e) {
+        const select = e.target;
+        const profileIndex = select.value;
+        this.onProfileChanged(profileIndex);
+    }
+
+    onProfileChanged(profileIndex) {
+        this.profileSwitcher.setIndex(profileIndex);
+        const options = this.profileSwitcher.options;
+        this.updateDocumentOptions(options);
+        this.updateTheme(options.general.popupTheme);
+        this.setCustomCss(options.general.customPopupCss);
+    }
+
     getOptionsContext() {
         return {
-            id: this.profileSwitcher.globalProfileIndex
+            index: this.profileSwitcher.globalProfileIndex
         };
     }
 
     async updateOptions() {
         this.profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
-        const options = this.profileSwitcher.options;
-        this.updateDocumentOptions(options);
-        this.updateTheme(options.general.popupTheme);
-        this.setCustomCss(options.general.customPopupCss);
+        this.onProfileChanged(0);
+        this.renderProfileSelect(this.profileSwitcher.getProfiles());
     }
 
     updateDocumentOptions(options) {
@@ -420,6 +432,15 @@ class Display {
         if (this.styleNode.parentNode !== parent) {
             parent.appendChild(this.styleNode);
         }
+    }
+
+    renderProfileSelect(profiles) {
+        const profileSelectContainer = document.querySelector('#profile-select');
+        profileSelectContainer.textContent = '';
+        if (profiles.length <= 1) { return; }
+        const profileSelect = this.displayGenerator.createProfileSelect(profiles, this.profileIndex);
+        profileSelect.addEventListener('change', this.onProfileSelect.bind(this));
+        profileSelectContainer.appendChild(profileSelect);
     }
 
     setInteractive(interactive) {

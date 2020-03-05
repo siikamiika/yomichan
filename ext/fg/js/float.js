@@ -123,6 +123,11 @@ class DisplayFloat extends Display {
         }
     }
 
+    onProfileChanged(profileIndex) {
+        super.onProfileChanged(profileIndex);
+        apiForward('profileChanged', {profileIndex, targetPopupId: this._popupId});
+    }
+
     async getMessageToken() {
         // this._messageTokenPromise is used to ensure that only one call to apiGetMessageToken is made.
         if (this._messageTokenPromise === null) {
@@ -145,6 +150,10 @@ class DisplayFloat extends Display {
         if (typeof handler !== 'function') { return; }
 
         handler(params);
+    }
+
+    async updateOptions() {
+        await super.updateOptions();
     }
 
     autoPlayAudio() {
