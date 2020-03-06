@@ -125,7 +125,7 @@ function _apiCheckLastError() {
     // NOP
 }
 
-const _directApiInvoke = (action, params={}) => {
+const _apiInvokeDirect = (action, params={}) => {
     const data = {action, params};
     return new Promise((resolve, reject) => {
         try {
@@ -150,7 +150,7 @@ const _directApiInvoke = (action, params={}) => {
     });
 };
 
-const _remoteApiInvoke = (action, params={}) => {
+const _apiInvokeRemote = (action, params={}) => {
     const data = {action, params};
     return new Promise((resolve, reject) => {
         try {
@@ -174,4 +174,4 @@ const _remoteApiInvoke = (action, params={}) => {
     });
 };
 
-const _apiInvoke = window.isBackground ? _directApiInvoke : _remoteApiInvoke;
+const _apiInvoke = window.isBackground ? _apiInvokeDirect : _apiInvokeRemote;
