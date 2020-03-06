@@ -20,7 +20,7 @@
 
 class QueryParser extends TextScanner {
     constructor(search) {
-        super(document.querySelector('#query-parser-content'), [], [], []);
+        super(document.querySelector('#query-parser-content'), [], []);
         this.search = search;
 
         this.parseResults = [];

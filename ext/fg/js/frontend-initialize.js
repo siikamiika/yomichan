@@ -22,7 +22,7 @@ async function main() {
     await yomichan.prepare();
 
     const data = window.frontendInitializationData || {};
-    const {id, depth=0, parentFrameId, ignoreNodes, url, proxy=false} = data;
+    const {id, depth=0, parentFrameId, url, proxy=false} = data;
 
     let popup;
     if (proxy) {
@@ -34,7 +34,7 @@ async function main() {
         popup = popupHost.getOrCreatePopup();
     }
 
-    const frontend = new Frontend(popup, ignoreNodes);
+    const frontend = new Frontend(popup);
     await frontend.prepare();
 }
 
