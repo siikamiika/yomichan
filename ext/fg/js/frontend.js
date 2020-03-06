@@ -128,7 +128,7 @@ class Frontend extends TextScanner {
         this.optionsContext.url = this.popup.url;
         const profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
         this.setOptions(profileSwitcher);
-        await this.onProfileChanged(0);
+        await this.onProfileChanged(profileSwitcher.getIndex());
     }
 
     async onProfileChanged(profileIndex) {

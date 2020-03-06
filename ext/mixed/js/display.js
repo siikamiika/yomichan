@@ -378,8 +378,8 @@ class Display {
 
     async updateOptions() {
         this.profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
-        this.onProfileChanged(0);
-        this.renderProfileSelect(this.profileSwitcher.getProfiles());
+        this.renderProfileSelect();
+        this.onProfileChanged(this.profileSwitcher.getIndex());
     }
 
     updateDocumentOptions(options) {
@@ -415,11 +415,16 @@ class Display {
         }
     }
 
-    renderProfileSelect(profiles) {
+    renderProfileSelect() {
+        const profiles = this.profileSwitcher.getProfiles();
+        const index = this.profileSwitcher.getIndex();
+
         const profileSelectContainer = document.querySelector('#profile-select');
         profileSelectContainer.textContent = '';
+
         if (profiles.length <= 1) { return; }
-        const profileSelect = this.displayGenerator.createProfileSelect(profiles, this.profileIndex);
+
+        const profileSelect = this.displayGenerator.createProfileSelect(profiles, index);
         profileSelect.addEventListener('change', this.onProfileSelect.bind(this));
         profileSelectContainer.appendChild(profileSelect);
     }

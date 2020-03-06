@@ -224,7 +224,7 @@ class Backend {
         const {profiles, profileCurrent} = this.options;
 
         if (typeof optionsContext.index === 'number') {
-            yield {index: optionsContext.index, profile: profiles[optionsContext.index]};
+            yield {index: optionsContext.index, profile: profiles[optionsContext.index], selected: true};
             return;
         }
 
@@ -233,14 +233,18 @@ class Backend {
         for (const profile of profiles) {
             const conditionGroups = profile.conditionGroups;
             if (conditionGroups.length > 0 && Backend.testConditionGroups(conditionGroups, optionsContext)) {
+                yield {index: profileIndex, profile, selected: !contextHasResults};
                 contextHasResults = true;
-                yield {index: profileIndex, profile};
             }
             ++profileIndex;
         }
 
         if (!contextHasResults) {
-            yield {index: profileCurrent, profile: profiles[profileCurrent]};
+            profileIndex = 0;
+            for (const profile of profiles) {
+                yield {index: profileIndex, profile, selected: profileIndex === profileCurrent};
+                ++profileIndex;
+            }
         }
     }
 
