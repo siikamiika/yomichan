@@ -19,7 +19,7 @@
 class ProfileSwitcher {
     constructor(profiles) {
         this._index = 0;
-        this._profiles = profiles;
+        this._profiles = this._processProfiles(profiles);
     }
 
     get options() {
@@ -34,6 +34,10 @@ class ProfileSwitcher {
         return this._profiles[this._index].index;
     }
 
+    getIndex() {
+        return this._index;
+    }
+
     setIndex(index) {
         if (index >= this._profiles.length) {
             throw new Error('Profile index is out of bounds');
@@ -42,6 +46,26 @@ class ProfileSwitcher {
     }
 
     getProfiles() {
-        return this._profiles.map((profile) => profile.profile);
+        return this._profiles;
+    }
+
+    _processProfiles(profiles) {
+        const processedProfiles = [];
+
+        let profileSwitcherIndex = 0;
+        let selectedIndex = 0;
+
+        for (const currentProfile of profiles) {
+            const {profile, index, selected} = currentProfile;
+            if (selected) {
+                selectedIndex = profileSwitcherIndex;
+            }
+            processedProfiles.push({profile, index});
+            ++profileSwitcherIndex;
+        }
+
+        this._index = selectedIndex;
+
+        return processedProfiles;
     }
 }
