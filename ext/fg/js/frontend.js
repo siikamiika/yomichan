@@ -146,7 +146,7 @@ class Frontend extends TextScanner {
         }
         this.ignoreNodes = ignoreNodes.join(',');
 
-        await this.onProfileChanged(0);
+        await this.onProfileChanged(profileSwitcher.getIndex());
     }
 
     async onProfileChanged(profileIndex) {

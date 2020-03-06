@@ -426,19 +426,19 @@ class DisplayGenerator {
         return node;
     }
 
-    createProfileSelect(profiles, currentProfileIndex) {
+    createProfileSelect(profiles, selectedIndex) {
         const select = document.createElement('select');
 
         let profileIndex = 0;
         for (const profile of profiles) {
             const option = document.createElement('option');
-            option.textContent = profile.name;
+            option.textContent = profile.profile.name;
             option.value = profileIndex;
             select.appendChild(option);
             ++profileIndex;
         }
 
-        select.selectedIndex = currentProfileIndex;
+        select.selectedIndex = selectedIndex;
 
         return select;
     }
