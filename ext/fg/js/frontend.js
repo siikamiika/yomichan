@@ -19,10 +19,9 @@
 /*global apiGetZoom, apiOptionsGet, apiTermsFind, apiKanjiFind, docSentenceExtract, TextScanner, apiProfilesGetMatching, ProfileSwitcher*/
 
 class Frontend extends TextScanner {
-    constructor(popup, ignoreNodes) {
+    constructor(popup) {
         super(
             window,
-            ignoreNodes,
             popup.isProxy() ? [] : [popup.getContainer()],
             [(x, y) => this.popup.containsPoint(x, y)]
         );
@@ -133,7 +132,15 @@ class Frontend extends TextScanner {
 
     async onProfileChanged(profileIndex) {
         this.profileSwitcher.setIndex(profileIndex);
+
+        const ignoreNodes = ['.scan-disable', '.scan-disable *'];
+        if (!this.profileSwitcher.options.scanning.enableOnPopupExpressions) {
+            ignoreNodes.push('.source-text', '.source-text *');
+        }
+        this.ignoreNodes = ignoreNodes.join(',');
+
         await this.popup.setOptions(this.profileSwitcher.options);
+
         this._updateContentScale();
         if (this.textSourceCurrent !== null && this.causeCurrent !== null) {
             await this.onSearchSource(this.textSourceCurrent, this.causeCurrent);

@@ -19,11 +19,12 @@
 /*global docRangeFromPoint, TextSourceRange, DOM*/
 
 class TextScanner {
-    constructor(node, ignoreNodes, ignoreElements, ignorePoints) {
+    constructor(node, ignoreElements, ignorePoints) {
         this.node = node;
-        this.ignoreNodes = (Array.isArray(ignoreNodes) && ignoreNodes.length > 0 ? ignoreNodes.join(',') : null);
         this.ignoreElements = ignoreElements;
         this.ignorePoints = ignorePoints;
+
+        this.ignoreNodes = null;
 
         this.scanTimerPromise = null;
         this.causeCurrent = null;
