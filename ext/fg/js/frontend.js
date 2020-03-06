@@ -151,6 +151,13 @@ class Frontend extends TextScanner {
 
     async onProfileChanged(profileIndex) {
         this.profileSwitcher.setIndex(profileIndex);
+
+        const ignoreNodes = ['.scan-disable', '.scan-disable *'];
+        if (!this.profileSwitcher.options.scanning.enableOnPopupExpressions) {
+            ignoreNodes.push('.source-text', '.source-text *');
+        }
+        this.ignoreNodes = ignoreNodes.join(',');
+
         await this.popup.setOptions(this.profileSwitcher.options);
 
         this._updateContentScale();
