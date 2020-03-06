@@ -238,7 +238,12 @@ class Backend {
     }
 
     getProfile(optionsContext) {
-        return this._getProfilesFromContext(optionsContext).next().value.profile;
+        for (const profile of this._getProfilesFromContext(optionsContext)) {
+            if (profile.selected) {
+                return profile.profile;
+            }
+        }
+        return null;
     }
 
     getMatchingProfiles(optionsContext) {
