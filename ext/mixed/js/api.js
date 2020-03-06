@@ -121,7 +121,36 @@ function apiGetDefaultAnkiFieldTemplates() {
     return _apiInvoke('getDefaultAnkiFieldTemplates');
 }
 
-function _apiInvoke(action, params={}) {
+function _apiCheckLastError() {
+    // NOP
+}
+
+const _directApiInvoke = (action, params={}) => {
+    const data = {action, params};
+    return new Promise((resolve, reject) => {
+        try {
+            const callback = (response) => {
+                if (response !== null && typeof response === 'object') {
+                    if (typeof response.error !== 'undefined') {
+                        reject(jsonToError(response.error));
+                    } else {
+                        resolve(response.result);
+                    }
+                } else {
+                    const message = response === null ? 'Unexpected null response' : `Unexpected response of type ${typeof response}`;
+                    reject(new Error(`${message} (${JSON.stringify(data)})`));
+                }
+            };
+            const backend = window.yomichanBackend;
+            backend.onMessage({action, params}, null, callback);
+        } catch (e) {
+            reject(e);
+            yomichan.triggerOrphaned(e);
+        }
+    });
+};
+
+const _remoteApiInvoke = (action, params={}) => {
     const data = {action, params};
     return new Promise((resolve, reject) => {
         try {
@@ -143,8 +172,6 @@ function _apiInvoke(action, params={}) {
             yomichan.triggerOrphaned(e);
         }
     });
-}
+};
 
-function _apiCheckLastError() {
-    // NOP
-}
+const _apiInvoke = window.isBackground ? _directApiInvoke : _remoteApiInvoke;
