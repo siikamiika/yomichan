@@ -35,6 +35,11 @@ const chrome = {
         sendMessage() {
             // NOP
         }
+    },
+    extension: {
+        getBackgroundPage() {
+            // NOP
+        }
     }
 };
 
