@@ -383,7 +383,12 @@ class Backend {
         return definitions;
     }
 
-    async _onApiTermsFind({text, details, optionsContext}) {
+    async _onApiTermsFind({text, details, optionsContext}, sender) {
+        chrome.tabs.sendMessage(
+            sender.tab.id,
+            {action: 'documentContainsSelector', params: {selector: 'html', targetPopupId: 0}},
+            (response) => console.log(response)
+        );
         const options = this.getOptions(optionsContext);
         const mode = options.general.resultOutputMode;
         const [definitions, length] = await this.translator.findTerms(mode, text, details, options);

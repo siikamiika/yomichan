@@ -46,7 +46,8 @@ class Frontend extends TextScanner {
 
         this._runtimeMessageHandlers = new Map([
             ['popupSetVisibleOverride', ({visible}) => { this.popup.setVisibleOverride(visible); }],
-            ['profileChanged', ({profileIndex}) => { this.onProfileChanged(profileIndex); }]
+            ['profileChanged', ({profileIndex}) => { this.onProfileChanged(profileIndex); }],
+            ['documentContainsSelector', ({selector}) => { return this.onDocumentContainsSelector(selector); }]
         ]);
     }
 
@@ -176,6 +177,10 @@ class Frontend extends TextScanner {
         }
 
         return results;
+    }
+
+    onDocumentContainsSelector(selector) {
+        return (document.querySelector(selector) !== null);
     }
 
     showContent(textSource, focus, definitions, type) {
