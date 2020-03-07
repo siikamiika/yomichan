@@ -47,14 +47,14 @@ class QueryParser extends TextScanner {
     async onSearchSource(textSource, cause) {
         if (textSource === null) { return null; }
 
-        this.setTextSourceScanLength(textSource, this.search.profileSwitcher.options.scanning.length);
+        this.setTextSourceScanLength(textSource, this.profileSwitcher.options.scanning.length);
         const searchText = textSource.text();
         if (searchText.length === 0) { return; }
 
         const {definitions, length} = await apiTermsFind(searchText, {}, this.search.getOptionsContext());
         if (definitions.length === 0) { return null; }
 
-        const sentence = docSentenceExtract(textSource, this.search.profileSwitcher.options.anki.sentenceExt);
+        const sentence = docSentenceExtract(textSource, this.profileSwitcher.options.anki.sentenceExt);
 
         textSource.setEndOffset(length);
 
@@ -109,7 +109,7 @@ class QueryParser extends TextScanner {
     }
 
     getParseResult() {
-        const {selectedParser} = this.search.profileSwitcher.options.parsing;
+        const {selectedParser} = this.profileSwitcher.options.parsing;
         return this.parseResults.find((r) => r.id === selectedParser);
     }
 
@@ -129,14 +129,14 @@ class QueryParser extends TextScanner {
 
     async parseText(text) {
         const results = [];
-        if (this.search.profileSwitcher.options.parsing.enableScanningParser) {
+        if (this.profileSwitcher.options.parsing.enableScanningParser) {
             results.push({
                 name: 'Scanning parser',
                 id: 'scan',
                 parsedText: await apiTextParse(text, this.search.getOptionsContext())
             });
         }
-        if (this.search.profileSwitcher.options.parsing.enableMecabParser) {
+        if (this.profileSwitcher.options.parsing.enableMecabParser) {
             const mecabResults = await apiTextParseMecab(text, this.search.getOptionsContext());
             for (const [mecabDictName, mecabDictResults] of mecabResults) {
                 results.push({
@@ -162,7 +162,7 @@ class QueryParser extends TextScanner {
     renderParserSelect() {
         this.queryParserSelect.textContent = '';
         if (this.parseResults.length > 1) {
-            const {selectedParser} = this.search.profileSwitcher.options.parsing;
+            const {selectedParser} = this.profileSwitcher.options.parsing;
             const select = this.queryParserGenerator.createParserSelect(this.parseResults, selectedParser);
             select.addEventListener('change', this.onParserChange.bind(this));
             this.queryParserSelect.appendChild(select);
