@@ -105,11 +105,28 @@ class Popup {
     }
 
     async containsPoint(x, y) {
+        function showPoint(_x, _y, id) {
+            const e = document.querySelector(`#indicator${id}`);
+            e.style.left = `${_x - 1}px`;
+            e.style.top = `${_y - 1}px`;
+            e.hidden = false;
+        }
         for (let popup = this; popup !== null && popup.isVisibleSync(); popup = popup._child) {
             const rect = popup._container.getBoundingClientRect();
-            if (x >= rect.left && y >= rect.top && x < rect.right && y < rect.bottom) {
+            showPoint(x, y, 1);
+            showPoint(rect.left, rect.top, 2);
+            if (
+                x >= rect.left &&
+                y >= rect.top &&
+                x < rect.right &&
+                y < rect.bottom
+            ) {
                 return true;
             }
+            // console.log(this._id, {left, top, right, bottom}, [x, y]);
+            // if (x >= rect.left && y >= rect.top && x < rect.right && y < rect.bottom) {
+            //     return true;
+            // }
         }
         return false;
     }
