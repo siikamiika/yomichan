@@ -174,4 +174,4 @@ const _apiInvokeRemote = (action, params={}) => {
     });
 };
 
-const _apiInvoke = window.isBackground ? _apiInvokeDirect : _apiInvokeRemote;
+const _apiInvoke = yomichan.isOnBackgroundPage ? _apiInvokeDirect : _apiInvokeRemote;

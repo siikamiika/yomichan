@@ -269,6 +269,11 @@ const yomichan = (() => {
         constructor() {
             super();
 
+            this.isOnBackgroundPage = (
+                typeof chrome.extension.getBackgroundPage === 'function' &&
+                chrome.extension.getBackgroundPage() === window
+            );
+
             this._isBackendPreparedResolve = null;
             this._isBackendPreparedPromise = new Promise((resolve) => (this._isBackendPreparedResolve = resolve));
 
