@@ -138,8 +138,9 @@ class Frontend extends TextScanner {
     async updateOptions() {
         this.optionsContext.url = this.popup.url;
         const {matchingProfiles, selectedProfileIndex} = await apiProfilesGetMatching(this.optionsContext);
-        const profileSwitcher = new ProfileSwitcher(matchingProfiles, selectedProfileIndex);
-        this.setOptions(profileSwitcher);
+        this.profileSwitcher = new ProfileSwitcher(matchingProfiles, selectedProfileIndex, {
+            setOptionsObject: (options) => { this.setOptions(options); }
+        });
 
         const ignoreNodes = ['.scan-disable', '.scan-disable *'];
         if (!this.options.scanning.enableOnPopupExpressions) {
@@ -156,12 +157,12 @@ class Frontend extends TextScanner {
         }
 
         const ignoreNodes = ['.scan-disable', '.scan-disable *'];
-        if (!this.profileSwitcher.options.scanning.enableOnPopupExpressions) {
+        if (!this.options.scanning.enableOnPopupExpressions) {
             ignoreNodes.push('.source-text', '.source-text *');
         }
         this.ignoreNodes = ignoreNodes.join(',');
 
-        await this.popup.setOptions(this.profileSwitcher.options);
+        await this.popup.setOptions(this.options);
 
         this._updateContentScale();
 
@@ -186,14 +187,14 @@ class Frontend extends TextScanner {
             }
         } catch (e) {
             if (this._orphaned) {
-                if (textSource !== null && this.profileSwitcher.options.scanning.modifier !== 'none') {
+                if (textSource !== null && this.options.scanning.modifier !== 'none') {
                     this._showPopupContent(textSource, 'orphaned');
                 }
             } else {
                 this.onError(e);
             }
         } finally {
-            if (results === null && this.profileSwitcher.options.scanning.autoHideResults) {
+            if (results === null && this.options.scanning.autoHideResults) {
                 this.onSearchClear(true);
             }
         }
@@ -202,7 +203,7 @@ class Frontend extends TextScanner {
     }
 
     showContent(textSource, focus, definitions, type) {
-        const sentence = docSentenceExtract(textSource, this.profileSwitcher.options.anki.sentenceExt);
+        const sentence = docSentenceExtract(textSource, this.options.anki.sentenceExt);
         const url = window.location.href;
         this._showPopupContent(
             textSource,
@@ -216,7 +217,7 @@ class Frontend extends TextScanner {
     }
 
     async findTerms(textSource) {
-        this.setTextSourceScanLength(textSource, this.profileSwitcher.options.scanning.length);
+        this.setTextSourceScanLength(textSource, this.options.scanning.length);
 
         const searchText = textSource.text();
         if (searchText.length === 0) { return null; }
@@ -264,7 +265,7 @@ class Frontend extends TextScanner {
     }
 
     _updateContentScale() {
-        const {popupScalingFactor, popupScaleRelativeToPageZoom, popupScaleRelativeToVisualViewport} = this.profileSwitcher.options.general;
+        const {popupScalingFactor, popupScaleRelativeToPageZoom, popupScaleRelativeToVisualViewport} = this.options.general;
         let contentScale = popupScalingFactor;
         if (popupScaleRelativeToPageZoom) {
             contentScale /= this._pageZoomFactor;

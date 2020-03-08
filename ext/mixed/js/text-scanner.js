@@ -34,7 +34,7 @@ class TextScanner {
         this.causeCurrent = null;
         this.textSourceCurrent = null;
         this.pendingLookup = false;
-        this.profileSwitcher = null;
+        this.options = null;
 
         this.enabled = false;
         this.eventListeners = new EventListenerCollection();
@@ -59,7 +59,7 @@ class TextScanner {
             return;
         }
 
-        const scanningOptions = this.profileSwitcher.options.scanning;
+        const scanningOptions = this.options.scanning;
         const scanningModifier = scanningOptions.modifier;
         if (!(
             TextScanner.isScanningModifierPressed(scanningModifier, e) ||
@@ -206,7 +206,7 @@ class TextScanner {
     }
 
     async scanTimerWait() {
-        const delay = this.profileSwitcher.options.scanning.delay;
+        const delay = this.options.scanning.delay;
         const promise = promiseTimeout(delay, true);
         this.scanTimerPromise = promise;
         try {
@@ -242,7 +242,7 @@ class TextScanner {
 
     hookEvents() {
         let eventListenerInfos = this.getMouseEventListeners();
-        if (this.profileSwitcher.options.scanning.touchInputEnabled) {
+        if (this.options.scanning.touchInputEnabled) {
             eventListenerInfos = eventListenerInfos.concat(this.getTouchEventListeners());
         }
 
@@ -272,9 +272,9 @@ class TextScanner {
         ];
     }
 
-    setOptions(profileSwitcher) {
-        this.profileSwitcher = profileSwitcher;
-        this.setEnabled(this.profileSwitcher.options.general.enable);
+    setOptions(options) {
+        this.options = options;
+        this.setEnabled(this.options.general.enable);
     }
 
     async searchAt(x, y, cause) {
@@ -291,7 +291,7 @@ class TextScanner {
                 }
             }
 
-            const textSource = docRangeFromPoint(x, y, this.profileSwitcher.options.scanning.deepDomScan);
+            const textSource = docRangeFromPoint(x, y, this.options.scanning.deepDomScan);
             try {
                 if (this.textSourceCurrent !== null && this.textSourceCurrent.equals(textSource)) {
                     return;
@@ -302,7 +302,7 @@ class TextScanner {
                 if (result !== null) {
                     this.causeCurrent = cause;
                     this.textSourceCurrent = textSource;
-                    if (this.profileSwitcher.options.scanning.selectText) {
+                    if (this.options.scanning.selectText) {
                         textSource.select();
                     }
                 }
@@ -336,7 +336,7 @@ class TextScanner {
 
     onSearchClear(_) {
         if (this.textSourceCurrent !== null) {
-            if (this.profileSwitcher.options.scanning.selectText) {
+            if (this.options.scanning.selectText) {
                 this.textSourceCurrent.deselect();
             }
             this.textSourceCurrent = null;

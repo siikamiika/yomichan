@@ -88,7 +88,7 @@ class DisplaySearch extends Display {
 
             document.documentElement.dataset.searchMode = mode;
 
-            if (this.profileSwitcher.options.general.enableWanakana === true) {
+            if (this.options.general.enableWanakana === true) {
                 this.wanakanaEnable.checked = true;
                 window.wanakana.bind(this.query);
             } else {
@@ -99,7 +99,7 @@ class DisplaySearch extends Display {
             this.onSearchQueryUpdated(this.query.value, false);
 
             if (mode !== 'popup') {
-                if (this.profileSwitcher.options.general.enableClipboardMonitor === true) {
+                if (this.options.general.enableClipboardMonitor === true) {
                     this.clipboardMonitorEnable.checked = true;
                     this.clipboardMonitor.start();
                 } else {
@@ -294,7 +294,7 @@ class DisplaySearch extends Display {
 
     async updateOptions() {
         await super.updateOptions();
-        this.queryParser.setOptions(this.profileSwitcher);
+        this.queryParser.setOptions(this.options);
     }
 
     isWanakanaEnabled() {
