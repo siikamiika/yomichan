@@ -247,7 +247,19 @@ class Backend {
     }
 
     getMatchingProfiles(optionsContext) {
-        return Array.from(this._getProfilesFromContext(optionsContext));
+        const matchingProfiles = [];
+        let selectedProfileIndex = 0;
+        let profileIndex = 0;
+
+        for (const {profile, index, selected} of this._getProfilesFromContext(optionsContext)) {
+            if (selected) {
+                selectedProfileIndex = profileIndex;
+            }
+            matchingProfiles.push({profile, index});
+            ++profileIndex;
+        }
+
+        return {matchingProfiles, selectedProfileIndex};
     }
 
     *_getProfilesFromContext(optionsContext) {

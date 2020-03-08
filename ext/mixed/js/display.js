@@ -378,8 +378,10 @@ class Display {
         this.onProfileChanged(profileIndex);
     }
 
-    onProfileChanged(profileIndex) {
-        this.profileSwitcher.setIndex(profileIndex);
+    onProfileChanged(profileIndex=null) {
+        if (profileIndex !== null) {
+            this.profileSwitcher.setIndex(profileIndex);
+        }
         const options = this.profileSwitcher.options;
         this.updateDocumentOptions(options);
         this.updateTheme(options.general.popupTheme);
@@ -393,9 +395,10 @@ class Display {
     }
 
     async updateOptions() {
-        this.profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
+        const {matchingProfiles, selectedProfileIndex} = await apiProfilesGetMatching(this.optionsContext);
+        this.profileSwitcher = new ProfileSwitcher(matchingProfiles, selectedProfileIndex);
         this.renderProfileSelect();
-        this.onProfileChanged(this.profileSwitcher.getIndex());
+        this.onProfileChanged();
     }
 
     updateDocumentOptions(options) {

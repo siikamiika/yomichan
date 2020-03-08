@@ -17,9 +17,9 @@
  */
 
 class ProfileSwitcher {
-    constructor(profiles) {
-        this._index = 0;
-        this._profiles = this._processProfiles(profiles);
+    constructor(profiles, selectedIndex=0) {
+        this._index = selectedIndex;
+        this._profiles = profiles;
     }
 
     get options() {
@@ -47,25 +47,5 @@ class ProfileSwitcher {
 
     getProfiles() {
         return this._profiles;
-    }
-
-    _processProfiles(profiles) {
-        const processedProfiles = [];
-
-        let profileSwitcherIndex = 0;
-        let selectedIndex = 0;
-
-        for (const currentProfile of profiles) {
-            const {profile, index, selected} = currentProfile;
-            if (selected) {
-                selectedIndex = profileSwitcherIndex;
-            }
-            processedProfiles.push({profile, index});
-            ++profileSwitcherIndex;
-        }
-
-        this._index = selectedIndex;
-
-        return processedProfiles;
     }
 }

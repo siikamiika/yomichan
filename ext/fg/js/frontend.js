@@ -137,7 +137,8 @@ class Frontend extends TextScanner {
 
     async updateOptions() {
         this.optionsContext.url = this.popup.url;
-        const profileSwitcher = new ProfileSwitcher(await apiProfilesGetMatching(this.optionsContext));
+        const {matchingProfiles, selectedProfileIndex} = await apiProfilesGetMatching(this.optionsContext);
+        const profileSwitcher = new ProfileSwitcher(matchingProfiles, selectedProfileIndex);
         this.setOptions(profileSwitcher);
 
         const ignoreNodes = ['.scan-disable', '.scan-disable *'];
@@ -146,11 +147,13 @@ class Frontend extends TextScanner {
         }
         this.ignoreNodes = ignoreNodes.join(',');
 
-        await this.onProfileChanged(profileSwitcher.getIndex());
+        await this.onProfileChanged();
     }
 
-    async onProfileChanged(profileIndex) {
-        this.profileSwitcher.setIndex(profileIndex);
+    async onProfileChanged(profileIndex=null) {
+        if (profileIndex !== null) {
+            this.profileSwitcher.setIndex(profileIndex);
+        }
 
         const ignoreNodes = ['.scan-disable', '.scan-disable *'];
         if (!this.profileSwitcher.options.scanning.enableOnPopupExpressions) {
