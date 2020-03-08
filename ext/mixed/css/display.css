@@ -116,6 +116,13 @@ h2 {
     transform: scaleX(-1);
 }
 
+.action-cycle-profiles {
+    white-space: nowrap;
+    max-width: 10em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 
 /*
  * Search page

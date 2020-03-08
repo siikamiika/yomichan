@@ -124,6 +124,13 @@ class Display {
                 }
                 return false;
             }],
+            ['O', (e) => {
+                if (e.altKey) {
+                    this.cycleProfiles();
+                    return true;
+                }
+                return false;
+            }],
             ['E', (e) => {
                 if (e.altKey) {
                     this.noteTryAdd('term-kanji');
@@ -335,6 +342,11 @@ class Display {
         apiNoteView(link.dataset.noteId);
     }
 
+    onCycleProfiles(e) {
+        e.preventDefault();
+        this.cycleProfiles();
+    }
+
     onKeyDown(e) {
         const key = Display.getKeyFromEvent(e);
         const handler = this._onKeyDownHandlers.get(key);
@@ -372,16 +384,11 @@ class Display {
         }
     }
 
-    onProfileSelect(e) {
-        const select = e.target;
-        const profileIndex = select.value;
-        this.onProfileChanged(profileIndex);
-    }
-
     onProfileChanged(profileIndex=null) {
         if (profileIndex !== null) {
             this.profileSwitcher.setIndex(profileIndex);
         }
+        this.renderProfileSelect();
         const options = this.profileSwitcher.options;
         this.updateDocumentOptions(options);
         this.updateTheme(options.general.popupTheme);
@@ -397,7 +404,6 @@ class Display {
     async updateOptions() {
         const {matchingProfiles, selectedProfileIndex} = await apiProfilesGetMatching(this.optionsContext);
         this.profileSwitcher = new ProfileSwitcher(matchingProfiles, selectedProfileIndex);
-        this.renderProfileSelect();
         this.onProfileChanged();
     }
 
@@ -438,17 +444,13 @@ class Display {
     }
 
     renderProfileSelect() {
-        const profiles = this.profileSwitcher.getProfiles();
-        const index = this.profileSwitcher.getIndex();
-
-        const profileSelectContainer = document.querySelector('#profile-select');
-        profileSelectContainer.textContent = '';
-
-        if (profiles.length <= 1) { return; }
-
-        const profileSelect = this.displayGenerator.createProfileSelect(profiles, index);
-        profileSelect.addEventListener('change', this.onProfileSelect.bind(this));
-        profileSelectContainer.appendChild(profileSelect);
+        const profileNameContainer = document.querySelector('.action-cycle-profiles');
+        profileNameContainer.textContent = '';
+        if (this.profileSwitcher.getProfileCount() > 1) {
+            profileNameContainer.textContent = this.profileSwitcher.profile.name;
+            const navigation = document.querySelector('#navigation-header');
+            navigation.hidden = false;
+        }
     }
 
     setInteractive(interactive) {
@@ -460,6 +462,7 @@ class Display {
             const actionPrevious = document.querySelector('.action-previous');
             const actionNext = document.querySelector('.action-next');
             // const navigationHeader = document.querySelector('.navigation-header');
+            const actionCycleProfiles = document.querySelector('.action-cycle-profiles');
 
             this.persistentEventListeners.addEventListener(document, 'keydown', this.onKeyDown.bind(this), false);
             this.persistentEventListeners.addEventListener(document, 'wheel', this.onWheel.bind(this), {passive: false});
@@ -473,6 +476,9 @@ class Display {
             // if (navigationHeader !== null) {
             //     this.persistentEventListeners.addEventListener(navigationHeader, 'wheel', this.onHistoryWheel.bind(this), {passive: false});
             // }
+            if (actionCycleProfiles !== null) {
+                this.persistentEventListeners.addEventListener(actionCycleProfiles, 'click', this.onCycleProfiles.bind(this));
+            }
         } else {
             this.persistentEventListeners.removeAllEventListeners();
         }
@@ -662,7 +668,7 @@ class Display {
     updateNavigation(previous, next) {
         const navigation = document.querySelector('#navigation-header');
         if (navigation !== null) {
-            navigation.hidden = !(previous || next);
+            navigation.hidden = !(previous || next || this.profileSwitcher.getProfileCount() > 1);
             navigation.dataset.hasPrevious = `${!!previous}`;
             navigation.dataset.hasNext = `${!!next}`;
         }
@@ -765,6 +771,15 @@ class Display {
             context: nextContext.context
         };
         this.setContent(nextContext.type, details);
+    }
+
+    cycleProfiles() {
+        const currentProfileIndex = this.profileSwitcher.getIndex();
+        const profileCount = this.profileSwitcher.getProfileCount();
+        const nextProfileIndex = currentProfileIndex < profileCount - 1 ? currentProfileIndex + 1 : 0;
+        if (currentProfileIndex !== nextProfileIndex) {
+            this.onProfileChanged(nextProfileIndex);
+        }
     }
 
     noteTryAdd(mode) {

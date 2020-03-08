@@ -48,4 +48,8 @@ class ProfileSwitcher {
     getProfiles() {
         return this._profiles;
     }
+
+    getProfileCount() {
+        return this._profiles.length;
+    }
 }
