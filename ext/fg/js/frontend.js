@@ -26,7 +26,7 @@
  */
 
 class Frontend extends TextScanner {
-    constructor(popup) {
+    constructor(popup, url) {
         super(
             window,
             () => this.popup.isProxy() ? [] : [this.popup.getContainer()],
@@ -35,14 +35,11 @@ class Frontend extends TextScanner {
 
         this.popup = popup;
 
+        this._url = url;
+
         this._disabledOverride = false;
 
         this.options = null;
-
-        this.optionsContext = {
-            depth: popup.depth,
-            url: popup.url
-        };
 
         this._pageZoomFactor = 1.0;
         this._contentScale = 1.0;
@@ -144,6 +141,7 @@ class Frontend extends TextScanner {
         this.onSearchClear(false);
         this.popup = popup;
         await popup.setOptions(this.options);
+        await popup.setOptionsContext(this.getOptionsContext());
     }
 
     async updateOptions() {
@@ -157,6 +155,7 @@ class Frontend extends TextScanner {
         this.ignoreNodes = ignoreNodes.join(',');
 
         await this.popup.setOptions(this.options);
+        await this.popup.setOptionsContext(this.getOptionsContext());
 
         this._updateContentScale();
 
@@ -198,11 +197,10 @@ class Frontend extends TextScanner {
 
     showContent(textSource, focus, definitions, type) {
         const sentence = docSentenceExtract(textSource, this.options.anki.sentenceExt);
-        const url = window.location.href;
         this._showPopupContent(
             textSource,
             type,
-            {definitions, context: {sentence, url, focus, disableHistory: true}}
+            {definitions, context: {sentence, url: this._url, focus, disableHistory: true}}
         );
     }
 
@@ -243,8 +241,10 @@ class Frontend extends TextScanner {
     }
 
     getOptionsContext() {
-        this.optionsContext.url = this.popup.url;
-        return this.optionsContext;
+        return {
+            depth: this.popup.depth,
+            url: this._url
+        };
     }
 
     _showPopupContent(textSource, type=null, details=null) {

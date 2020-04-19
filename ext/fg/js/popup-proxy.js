@@ -20,12 +20,11 @@
  */
 
 class PopupProxy {
-    constructor(id, depth, parentId, parentFrameId, url, getFrameOffset=null, setDisabled=null) {
+    constructor(id, depth, parentId, parentFrameId, getFrameOffset=null, setDisabled=null) {
         this._parentId = parentId;
         this._parentFrameId = parentFrameId;
         this._id = id;
         this._depth = depth;
-        this._url = url;
         this._apiSender = new FrontendApiSender();
         this._getFrameOffset = getFrameOffset;
         this._setDisabled = setDisabled;
@@ -49,10 +48,6 @@ class PopupProxy {
         return this._depth;
     }
 
-    get url() {
-        return this._url;
-    }
-
     // Public functions
 
     async prepare() {
@@ -66,6 +61,10 @@ class PopupProxy {
 
     async setOptions(options) {
         return await this._invokeHostApi('setOptions', {id: this._id, options});
+    }
+
+    async setOptionsContext(optionsContext) {
+        return await this._invokeHostApi('setOptionsContext', {id: this._id, optionsContext});
     }
 
     hide(changeFocus) {

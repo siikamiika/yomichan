@@ -33,6 +33,7 @@ class Popup {
         this._visible = false;
         this._visibleOverride = null;
         this._options = null;
+        this._optionsContext = null;
         this._contentScale = 1.0;
         this._containerSizeContentScale = null;
         this._targetOrigin = chrome.runtime.getURL('/').replace(/\/$/, '');
@@ -72,10 +73,6 @@ class Popup {
         return this._frameId;
     }
 
-    get url() {
-        return window.location.href;
-    }
-
     // Public functions
 
     isProxy() {
@@ -85,6 +82,11 @@ class Popup {
     async setOptions(options) {
         this._options = options;
         this.updateTheme();
+    }
+
+    async setOptionsContext(optionsContext) {
+        this._optionsContext = optionsContext;
+        this._invokeApi('setOptionsContext', {optionsContext});
     }
 
     hide(changeFocus) {
@@ -219,10 +221,9 @@ class Popup {
             this._invokeApi('prepare', {
                 popupInfo: {
                     id: this._id,
-                    depth: this._depth,
                     parentFrameId
                 },
-                url: this.url,
+                optionsContext: this._optionsContext,
                 childrenSupported: this._childrenSupported,
                 scale: this._contentScale
             });
