@@ -142,7 +142,6 @@ class Frontend extends TextScanner {
     async setPopup(popup) {
         this.onSearchClear(false);
         this.popup = popup;
-        await popup.setOptions(this.options);
         await popup.setOptionsContext(this.getOptionsContext(), this._id);
     }
 
@@ -156,7 +155,6 @@ class Frontend extends TextScanner {
         }
         this.ignoreNodes = ignoreNodes.join(',');
 
-        await this.popup.setOptions(this.options);
         await this.popup.setOptionsContext(this.getOptionsContext(), this._id);
 
         this._updateContentScale();

@@ -37,7 +37,6 @@ class PopupProxyHost {
 
         this._apiReceiver = new FrontendApiReceiver(`popup-proxy-host#${this._frameId}`, new Map([
             ['getOrCreatePopup', this._onApiGetOrCreatePopup.bind(this)],
-            ['setOptions', this._onApiSetOptions.bind(this)],
             ['setOptionsContext', this._onApiSetOptionsContext.bind(this)],
             ['hide', this._onApiHide.bind(this)],
             ['isVisible', this._onApiIsVisibleAsync.bind(this)],
@@ -102,11 +101,6 @@ class PopupProxyHost {
         return {
             id: popup.id
         };
-    }
-
-    async _onApiSetOptions({id, options}) {
-        const popup = this._getPopup(id);
-        return await popup.setOptions(options);
     }
 
     async _onApiSetOptionsContext({id, optionsContext, source}) {

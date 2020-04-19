@@ -19,6 +19,7 @@
  * DOM
  * apiGetMessageToken
  * apiInjectStylesheet
+ * apiOptionsGet
  */
 
 class Popup {
@@ -80,14 +81,13 @@ class Popup {
         return false;
     }
 
-    async setOptions(options) {
-        this._options = options;
-        this.updateTheme();
-    }
-
     async setOptionsContext(optionsContext, source) {
         this._optionsContext = optionsContext;
         this._previousOptionsContextSource = source;
+
+        this._options = await apiOptionsGet(optionsContext);
+        this.updateTheme();
+
         this._invokeApi('setOptionsContext', {optionsContext});
     }
 

@@ -59,10 +59,6 @@ class PopupProxy {
         return true;
     }
 
-    async setOptions(options) {
-        return await this._invokeHostApi('setOptions', {id: this._id, options});
-    }
-
     async setOptionsContext(optionsContext, source) {
         return await this._invokeHostApi('setOptionsContext', {id: this._id, optionsContext, source});
     }
