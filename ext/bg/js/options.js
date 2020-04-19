@@ -145,7 +145,7 @@ function profileOptionsCreateDefaults() {
             showPitchAccentDownstepNotation: true,
             showPitchAccentPositionNotation: true,
             showPitchAccentGraph: false,
-            showIframePopupsInRootFrame: false
+            showIframePopupsInRootFrame: true
         },
 
         audio: {
