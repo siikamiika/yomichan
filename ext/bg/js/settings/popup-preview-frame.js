@@ -60,7 +60,7 @@ class SettingsPopupPreview {
         this.popupSetCustomOuterCssOld = this.popup.setCustomOuterCss;
         this.popup.setCustomOuterCss = this.popupSetCustomOuterCss.bind(this);
 
-        this.frontend = new Frontend(this.popup);
+        this.frontend = new Frontend(this.popup, window.location.href);
 
         this.frontend.setEnabled = () => {};
         this.frontend.searchClear = () => {};
