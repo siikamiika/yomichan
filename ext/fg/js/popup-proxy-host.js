@@ -109,9 +109,9 @@ class PopupProxyHost {
         return await popup.setOptions(options);
     }
 
-    async _onApiSetOptionsContext({id, optionsContext}) {
+    async _onApiSetOptionsContext({id, optionsContext, source}) {
         const popup = this._getPopup(id);
-        return await popup.setOptionsContext(optionsContext);
+        return await popup.setOptionsContext(optionsContext, source);
     }
 
     async _onApiHide({id, changeFocus}) {
@@ -135,11 +135,11 @@ class PopupProxyHost {
         return await popup.containsPoint(x, y);
     }
 
-    async _onApiShowContent({id, elementRect, writingMode, type, details}) {
+    async _onApiShowContent({id, elementRect, writingMode, type, details, context}) {
         const popup = this._getPopup(id);
         elementRect = PopupProxyHost._convertJsonRectToDOMRect(popup, elementRect);
         if (!PopupProxyHost._popupCanShow(popup)) { return; }
-        return await popup.showContent(elementRect, writingMode, type, details);
+        return await popup.showContent(elementRect, writingMode, type, details, context);
     }
 
     async _onApiSetCustomCss({id, css}) {

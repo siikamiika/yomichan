@@ -38,6 +38,7 @@ class Popup {
         this._containerSizeContentScale = null;
         this._targetOrigin = chrome.runtime.getURL('/').replace(/\/$/, '');
         this._messageToken = null;
+        this._previousOptionsContextSource = null;
 
         this._container = document.createElement('iframe');
         this._container.className = 'yomichan-float';
@@ -84,8 +85,9 @@ class Popup {
         this.updateTheme();
     }
 
-    async setOptionsContext(optionsContext) {
+    async setOptionsContext(optionsContext, source) {
         this._optionsContext = optionsContext;
+        this._previousOptionsContextSource = source;
         this._invokeApi('setOptionsContext', {optionsContext});
     }
 
@@ -122,8 +124,14 @@ class Popup {
         return false;
     }
 
-    async showContent(elementRect, writingMode, type=null, details=null) {
+    async showContent(elementRect, writingMode, type, details, context) {
         if (this._options === null) { throw new Error('Options not assigned'); }
+
+        const {optionsContext, source} = context;
+        if (source !== this._previousOptionsContextSource) {
+            await this.setOptionsContext(optionsContext, source);
+        }
+
         await this._show(elementRect, writingMode);
         if (type === null) { return; }
         this._invokeApi('setContent', {type, details});

@@ -63,8 +63,8 @@ class PopupProxy {
         return await this._invokeHostApi('setOptions', {id: this._id, options});
     }
 
-    async setOptionsContext(optionsContext) {
-        return await this._invokeHostApi('setOptionsContext', {id: this._id, optionsContext});
+    async setOptionsContext(optionsContext, source) {
+        return await this._invokeHostApi('setOptionsContext', {id: this._id, optionsContext, source});
     }
 
     hide(changeFocus) {
@@ -87,14 +87,14 @@ class PopupProxy {
         return await this._invokeHostApi('containsPoint', {id: this._id, x, y});
     }
 
-    async showContent(elementRect, writingMode, type=null, details=null) {
+    async showContent(elementRect, writingMode, type, details, context) {
         let {x, y, width, height} = elementRect;
         if (this._getFrameOffset !== null) {
             await this._updateFrameOffset();
             [x, y] = this._applyFrameOffset(x, y);
         }
         elementRect = {x, y, width, height};
-        return await this._invokeHostApi('showContent', {id: this._id, elementRect, writingMode, type, details});
+        return await this._invokeHostApi('showContent', {id: this._id, elementRect, writingMode, type, details, context});
     }
 
     async setCustomCss(css) {

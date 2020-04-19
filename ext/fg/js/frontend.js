@@ -33,6 +33,8 @@ class Frontend extends TextScanner {
             [(x, y) => this.popup.containsPoint(x, y)]
         );
 
+        this._id = yomichan.generateId(16);
+
         this.popup = popup;
 
         this._url = url;
@@ -141,7 +143,7 @@ class Frontend extends TextScanner {
         this.onSearchClear(false);
         this.popup = popup;
         await popup.setOptions(this.options);
-        await popup.setOptionsContext(this.getOptionsContext());
+        await popup.setOptionsContext(this.getOptionsContext(), this._id);
     }
 
     async updateOptions() {
@@ -155,7 +157,7 @@ class Frontend extends TextScanner {
         this.ignoreNodes = ignoreNodes.join(',');
 
         await this.popup.setOptions(this.options);
-        await this.popup.setOptionsContext(this.getOptionsContext());
+        await this.popup.setOptionsContext(this.getOptionsContext(), this._id);
 
         this._updateContentScale();
 
@@ -248,11 +250,13 @@ class Frontend extends TextScanner {
     }
 
     _showPopupContent(textSource, type=null, details=null) {
+        const context = {optionsContext: this.getOptionsContext(), source: this._id};
         this._lastShowPromise = this.popup.showContent(
             textSource.getRect(),
             textSource.getWritingMode(),
             type,
-            details
+            details,
+            context
         );
         return this._lastShowPromise;
     }
