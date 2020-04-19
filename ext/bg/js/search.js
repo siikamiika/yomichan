@@ -233,7 +233,7 @@ class DisplaySearch extends Display {
             this.setIntroVisible(!valid, animate);
             this.updateSearchButton();
             if (valid) {
-                const {definitions} = await apiTermsFind(query, details, this.optionsContext);
+                const {definitions} = await apiTermsFind(query, details, this.getOptionsContext());
                 this.setContent('terms', {definitions, context: {
                     focus: false,
                     disableHistory: true,
