@@ -68,6 +68,7 @@ class DisplayFloat extends Display {
         this.optionsContext = optionsContext;
 
         await super.prepare();
+        await this.updateOptions();
 
         if (childrenSupported) {
             const {depth, url} = optionsContext;
