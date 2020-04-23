@@ -86,8 +86,21 @@ async function createPopupProxy(depth, id, parentFrameId) {
         applyOptions();
     };
 
+    const getUrl = async () => {
+        if (proxy) {
+            if (popups.proxy !== null) {
+                return await popups.proxy.getHostUrl();
+            }
+            return url;
+        }
+        return window.location.href;
+    };
+
     const applyOptions = async () => {
-        const optionsContext = {depth: isSearchPage ? 0 : depth, url};
+        const optionsContext = {
+            depth: isSearchPage ? 0 : depth,
+            url: await getUrl()
+        };
         const options = await apiOptionsGet(optionsContext);
 
         if (!proxy && frameOffsetForwarder === null) {
@@ -108,7 +121,7 @@ async function createPopupProxy(depth, id, parentFrameId) {
         }
 
         if (frontend === null) {
-            frontend = new Frontend(popup, url);
+            frontend = new Frontend(popup, getUrl);
             frontendPreparePromise = frontend.prepare();
             await frontendPreparePromise;
         } else {

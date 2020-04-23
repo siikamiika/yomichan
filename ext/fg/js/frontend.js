@@ -26,7 +26,7 @@
  */
 
 class Frontend extends TextScanner {
-    constructor(popup, url) {
+    constructor(popup, getUrl) {
         super(
             window,
             () => this.popup.isProxy() ? [] : [this.popup.getContainer()],
@@ -37,7 +37,8 @@ class Frontend extends TextScanner {
 
         this.popup = popup;
 
-        this._url = url;
+        this._url = null;
+        this._getUrl = getUrl;
 
         this._disabledOverride = false;
 
@@ -142,11 +143,12 @@ class Frontend extends TextScanner {
     async setPopup(popup) {
         this.onSearchClear(false);
         this.popup = popup;
-        await popup.setOptionsContext(this.getOptionsContext(), this._id);
+        await popup.setOptionsContext(await this.getOptionsContext(), this._id);
     }
 
     async updateOptions() {
-        this.options = await apiOptionsGet(this.getOptionsContext());
+        const optionsContext = await this.getOptionsContext();
+        this.options = await apiOptionsGet(optionsContext);
         this.setOptions(this.options, this._canEnable());
 
         const ignoreNodes = ['.scan-disable', '.scan-disable *'];
@@ -155,7 +157,7 @@ class Frontend extends TextScanner {
         }
         this.ignoreNodes = ignoreNodes.join(',');
 
-        await this.popup.setOptionsContext(this.getOptionsContext(), this._id);
+        await this.popup.setOptionsContext(optionsContext, this._id);
 
         this._updateContentScale();
 
@@ -214,7 +216,7 @@ class Frontend extends TextScanner {
         const searchText = textSource.text();
         if (searchText.length === 0) { return null; }
 
-        const {definitions, length} = await apiTermsFind(searchText, {}, this.getOptionsContext());
+        const {definitions, length} = await apiTermsFind(searchText, {}, await this.getOptionsContext());
         if (definitions.length === 0) { return null; }
 
         textSource.setEndOffset(length);
@@ -228,7 +230,7 @@ class Frontend extends TextScanner {
         const searchText = textSource.text();
         if (searchText.length === 0) { return null; }
 
-        const definitions = await apiKanjiFind(searchText, this.getOptionsContext());
+        const definitions = await apiKanjiFind(searchText, await this.getOptionsContext());
         if (definitions.length === 0) { return null; }
 
         return {definitions, type: 'kanji'};
@@ -240,7 +242,12 @@ class Frontend extends TextScanner {
         super.onSearchClear(changeFocus);
     }
 
-    getOptionsContext() {
+    async getOptionsContext() {
+        this._url = await this._getUrl();
+        return this.getOptionsContextCached();
+    }
+
+    getOptionsContextCached() {
         return {
             depth: this.popup.depth,
             url: this._url
@@ -248,7 +255,7 @@ class Frontend extends TextScanner {
     }
 
     _showPopupContent(textSource, type=null, details=null) {
-        const context = {optionsContext: this.getOptionsContext(), source: this._id};
+        const context = {optionsContext: this.getOptionsContextCached(), source: this._id};
         this._lastShowPromise = this.popup.showContent(
             textSource.getRect(),
             textSource.getWritingMode(),

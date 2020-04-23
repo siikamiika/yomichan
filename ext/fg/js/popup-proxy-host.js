@@ -45,7 +45,8 @@ class PopupProxyHost {
             ['showContent', this._onApiShowContent.bind(this)],
             ['setCustomCss', this._onApiSetCustomCss.bind(this)],
             ['clearAutoPlayTimer', this._onApiClearAutoPlayTimer.bind(this)],
-            ['setContentScale', this._onApiSetContentScale.bind(this)]
+            ['setContentScale', this._onApiSetContentScale.bind(this)],
+            ['getHostUrl', this._onApiGetHostUrl.bind(this)]
         ]));
     }
 
@@ -149,6 +150,10 @@ class PopupProxyHost {
     async _onApiSetContentScale({id, scale}) {
         const popup = this._getPopup(id);
         return popup.setContentScale(scale);
+    }
+
+    async _onApiGetHostUrl() {
+        return window.location.href;
     }
 
     // Private functions
