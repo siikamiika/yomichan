@@ -86,12 +86,16 @@ async function createPopupProxy(depth, id, parentFrameId) {
         applyOptions();
     };
 
+    let urlUpdatedAt = 0;
+    let proxyHostUrlCached = url;
     const getUrl = async () => {
         if (proxy) {
-            if (popups.proxy !== null) {
-                return await popups.proxy.getHostUrl();
+            const now = Date.now();
+            if (popups.proxy !== null && now - urlUpdatedAt > 500) {
+                proxyHostUrlCached = await popups.proxy.getHostUrl();
+                urlUpdatedAt = now;
             }
-            return url;
+            return proxyHostUrlCached;
         }
         return window.location.href;
     };
