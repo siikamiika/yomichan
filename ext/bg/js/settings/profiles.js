@@ -188,9 +188,10 @@ async function onTargetProfileChanged() {
     }
 
     currentProfileIndex = index;
-    yomichan.trigger('modifyingProfileChange');
 
     await profileOptionsUpdateTarget(optionsFull);
+
+    yomichan.trigger('modifyingProfileChange');
 }
 
 async function onProfileAdd() {
@@ -200,10 +201,11 @@ async function onProfileAdd() {
     optionsFull.profiles.push(profile);
 
     currentProfileIndex = optionsFull.profiles.length - 1;
-    yomichan.trigger('modifyingProfileChange');
 
     await profileOptionsUpdateTarget(optionsFull);
     await settingsSaveOptions();
+
+    yomichan.trigger('modifyingProfileChange');
 }
 
 async function onProfileRemove(e) {
@@ -242,6 +244,8 @@ async function onProfileRemoveConfirm() {
 
     await profileOptionsUpdateTarget(optionsFull);
     await settingsSaveOptions();
+
+    yomichan.trigger('modifyingProfileChange');
 }
 
 function onProfileNameChanged() {
@@ -264,10 +268,11 @@ async function onProfileMove(offset) {
     }
 
     currentProfileIndex = index;
-    yomichan.trigger('modifyingProfileChange');
 
     await profileOptionsUpdateTarget(optionsFull);
     await settingsSaveOptions();
+
+    yomichan.trigger('modifyingProfileChange');
 }
 
 async function onProfileCopy() {
