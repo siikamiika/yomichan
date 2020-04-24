@@ -20,6 +20,5 @@
  */
 
 (async () => {
-    const instance = new SettingsPopupPreview();
-    await instance.prepare();
+    new SettingsPopupPreview();
 })();

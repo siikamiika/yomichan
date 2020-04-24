@@ -188,6 +188,7 @@ async function onTargetProfileChanged() {
     }
 
     currentProfileIndex = index;
+    yomichan.trigger('modifyingProfileChange');
 
     await profileOptionsUpdateTarget(optionsFull);
 }
@@ -197,7 +198,10 @@ async function onProfileAdd() {
     const profile = utilBackgroundIsolate(optionsFull.profiles[currentProfileIndex]);
     profile.name = profileOptionsCreateCopyName(profile.name, optionsFull.profiles, 100);
     optionsFull.profiles.push(profile);
+
     currentProfileIndex = optionsFull.profiles.length - 1;
+    yomichan.trigger('modifyingProfileChange');
+
     await profileOptionsUpdateTarget(optionsFull);
     await settingsSaveOptions();
 }
@@ -260,6 +264,7 @@ async function onProfileMove(offset) {
     }
 
     currentProfileIndex = index;
+    yomichan.trigger('modifyingProfileChange');
 
     await profileOptionsUpdateTarget(optionsFull);
     await settingsSaveOptions();
