@@ -65,10 +65,9 @@ class SettingsPopupPreview {
         this.popupSetCustomOuterCssOld = this.popup.setCustomOuterCss;
         this.popup.setCustomOuterCss = this.popupSetCustomOuterCss.bind(this);
 
-        this.frontend = new Frontend(this.popup, null);
+        this.frontend = new Frontend(this.popup);
 
         this.frontend.getOptionsContext = async () => this.optionsContext;
-        this.frontend.getOptionsContextCached = () => this.optionsContext;
         this.frontend.setEnabled = () => {};
         this.frontend.onSearchClear = () => {};
 

@@ -88,22 +88,19 @@ async function createPopupProxy(depth, id, parentFrameId) {
 
     let urlUpdatedAt = 0;
     let proxyHostUrlCached = url;
-    const getUrl = async () => {
-        if (proxy) {
-            const now = Date.now();
-            if (popups.proxy !== null && now - urlUpdatedAt > 500) {
-                proxyHostUrlCached = await popups.proxy.getHostUrl();
-                urlUpdatedAt = now;
-            }
-            return proxyHostUrlCached;
+    const getProxyHostUrl = async () => {
+        const now = Date.now();
+        if (popups.proxy !== null && now - urlUpdatedAt > 500) {
+            proxyHostUrlCached = await popups.proxy.getHostUrl();
+            urlUpdatedAt = now;
         }
-        return window.location.href;
+        return proxyHostUrlCached;
     };
 
     const applyOptions = async () => {
         const optionsContext = {
             depth: isSearchPage ? 0 : depth,
-            url: await getUrl()
+            url: proxy ? await getProxyHostUrl() : window.location.href
         };
         const options = await apiOptionsGet(optionsContext);
 
@@ -125,6 +122,7 @@ async function createPopupProxy(depth, id, parentFrameId) {
         }
 
         if (frontend === null) {
+            const getUrl = proxy ? getProxyHostUrl : null;
             frontend = new Frontend(popup, getUrl);
             frontendPreparePromise = frontend.prepare();
             await frontendPreparePromise;
