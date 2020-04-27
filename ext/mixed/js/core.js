@@ -137,13 +137,19 @@ function areSetsEqual(set1, set2) {
 }
 
 function getSetIntersection(set1, set2) {
-    const result = [];
+    const result = new Set();
     for (const value of set1) {
         if (set2.has(value)) {
-            result.push(value);
+            result.add(value);
         }
     }
     return result;
+}
+
+function setDifference(set1, set2) {
+    return new Set(
+        [...set1].filter((value) => !set2.has(value))
+    );
 }
 
 

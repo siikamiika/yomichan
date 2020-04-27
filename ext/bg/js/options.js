@@ -108,6 +108,28 @@ const profileOptionsVersionUpdates = [
             fieldTemplates += '\n\n{{#*inline "document-title"}}\n    {{~context.document.title~}}\n{{/inline}}';
             options.anki.fieldTemplates = fieldTemplates;
         }
+    },
+    (options) => {
+        // Version 14 changes:
+        //  Support scanning key combinations instead of modifiers only.
+        const keyCombinations = [];
+        switch (options.scanning.modifier) {
+            case 'alt':
+                keyCombinations.push('MouseEvent.altKey');
+                break;
+            case 'ctrl':
+                keyCombinations.push('MouseEvent.ctrlKey');
+                break;
+            case 'shift':
+                keyCombinations.push('MouseEvent.shiftKey');
+                break;
+            case 'none':
+                break;
+            default:
+                keyCombinations.push('MouseEvent.shiftKey');
+                break;
+        }
+        options.scanning.keyCombinations = keyCombinations;
     }
 ];
 

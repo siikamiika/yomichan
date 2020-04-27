@@ -43,6 +43,9 @@ class TextScanner {
         this.preventNextMouseDown = false;
         this.preventNextClick = false;
         this.preventScroll = false;
+
+        this.keyCombinations = [];
+        this.isScanModifierNone = false;
     }
 
     onMouseOver(e) {
@@ -59,16 +62,15 @@ class TextScanner {
         }
 
         const scanningOptions = this.options.scanning;
-        const scanningModifier = scanningOptions.modifier;
         if (!(
-            TextScanner.isScanningModifierPressed(scanningModifier, e) ||
+            this.isScanningKeyCombinationActive(e) ||
             (scanningOptions.middleMouse && DOM.isMouseButtonDown(e, 'auxiliary'))
         )) {
             return;
         }
 
         const search = async () => {
-            if (scanningModifier === 'none') {
+            if (this.isScanModifierNone) {
                 if (!await this.scanTimerWait()) {
                     // Aborted
                     return;
@@ -274,6 +276,12 @@ class TextScanner {
     setOptions(options, canEnable=true) {
         this.options = options;
         this.setEnabled(this.options.general.enable, canEnable);
+        this.keyCombinations = options.scanning.keyCombinations
+            .map((keyCombination) => this.parseKeyCombination(keyCombination));
+        this.isScanModifierNone = (
+            this.keyCombinations.length === 0 ||
+            this.keyCombinations.some((keyCombination) => keyCombination.mouseEventProperties.size === 0)
+        );
     }
 
     async searchAt(x, y, cause) {
@@ -350,14 +358,38 @@ class TextScanner {
         return this.textSourceCurrent = textSource;
     }
 
-    static isScanningModifierPressed(scanningModifier, mouseEvent) {
-        switch (scanningModifier) {
-            case 'alt': return mouseEvent.altKey;
-            case 'ctrl': return mouseEvent.ctrlKey;
-            case 'shift': return mouseEvent.shiftKey;
-            case 'none': return true;
-            default: return false;
+    parseKeyCombination(keyCombination) {
+        const mouseEventProperties = new Set();
+        for (const keyCombinationPart of keyCombination.split(/\s+/g)) {
+            if (keyCombinationPart === '') { continue; }
+            const [type, value] = keyCombinationPart.split('.');
+            switch (type) {
+                case 'MouseEvent':
+                    mouseEventProperties.add(value);
+                    break;
+                default:
+                    throw new Error(`Unable to parse key combination part: ${keyCombinationPart}`);
+            }
         }
+        return {mouseEventProperties};
+    }
+
+    isScanningKeyCombinationActive(mouseEvent) {
+        if (this.isScanModifierNone) { return true; }
+        for (const {mouseEventProperties} of this.keyCombinations) {
+            if (setDifference(mouseEventProperties, this.getActiveModifiers(mouseEvent)).size !== 0) { continue; }
+            return true;
+        }
+        return false;
+    }
+
+    getActiveModifiers(mouseEvent) {
+        const modifiers = new Set();
+        if (mouseEvent.altKey) { modifiers.add('altKey'); }
+        if (mouseEvent.ctrlKey) { modifiers.add('ctrlKey'); }
+        if (mouseEvent.metaKey) { modifiers.add('metaKey'); }
+        if (mouseEvent.shiftKey) { modifiers.add('shiftKey'); }
+        return modifiers;
     }
 
     static getTouch(touchList, identifier) {

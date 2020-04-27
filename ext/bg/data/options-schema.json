@@ -354,6 +354,15 @@
                                         "enum": ["none", "alt", "ctrl", "shift"],
                                         "default": "shift"
                                     },
+                                    "keyCombinations": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "default": [
+                                            "MouseEvent.shiftKey"
+                                        ]
+                                    },
                                     "deepDomScan": {
                                         "type": "boolean",
                                         "default": false
