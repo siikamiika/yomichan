@@ -100,5 +100,27 @@ const profileConditionsDescriptor = {
                 test: ({url}, transformedOptionValue) => (transformedOptionValue !== null && transformedOptionValue.test(url))
             }
         }
+    },
+    modifierKey: {
+        name: 'Modifier Key',
+        description: 'Use profile depending on the active modifier keys.',
+        type: 'select',
+        values: [
+            ['alt', 'Alt'],
+            ['ctrl', 'Ctrl'],
+            ['meta', 'Meta'],
+            ['shift', 'Shift']
+        ],
+        defaultOperator: 'equal',
+        operators: {
+            equal: {
+                name: '=',
+                test: ({modifierKeys}, optionValue) => (modifierKeys.includes(optionValue))
+            },
+            notEqual: {
+                name: '\u2260',
+                test: ({modifierKeys}, optionValue) => (!modifierKeys.includes(optionValue))
+            }
+        }
     }
 };

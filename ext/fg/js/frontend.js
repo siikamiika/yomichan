@@ -283,7 +283,8 @@ class Frontend {
     async getOptionsContext() {
         const url = this._getUrl !== null ? await this._getUrl() : window.location.href;
         const depth = this.popup.depth;
-        return {depth, url};
+        const modifierKeys = [...this._activeModifiers];
+        return {depth, url, modifierKeys};
     }
 
     _showPopupContent(textSource, optionsContext, type=null, details=null) {
