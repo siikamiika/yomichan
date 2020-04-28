@@ -177,7 +177,8 @@ ConditionsUI.Condition = class Condition {
         this.parent = parent;
         this.condition = condition;
         this.container = ConditionsUI.instantiateTemplate('#condition-template').appendTo(parent.container);
-        this.input = this.container.find('input');
+        this.input = this.container.find('.condition-input');
+        this.inputInner = null;
         this.typeSelect = this.container.find('.condition-type');
         this.operatorSelect = this.container.find('.condition-operator');
         this.removeButton = this.container.find('.condition-remove');
@@ -186,14 +187,15 @@ ConditionsUI.Condition = class Condition {
         this.updateOperators();
         this.updateInput();
 
-        this.input.on('change', this.onInputChanged.bind(this));
         this.typeSelect.on('change', this.onConditionTypeChanged.bind(this));
         this.operatorSelect.on('change', this.onConditionOperatorChanged.bind(this));
         this.removeButton.on('click', this.onRemoveClicked.bind(this));
     }
 
     cleanup() {
-        this.input.off('change');
+        if (this.inputInner !== null) {
+            this.inputInner.off('change');
+        }
         this.typeSelect.off('change');
         this.operatorSelect.off('change');
         this.removeButton.off('click');
@@ -236,20 +238,42 @@ ConditionsUI.Condition = class Condition {
     updateInput() {
         const conditionDescriptors = this.parent.parent.conditionDescriptors;
         const {type, operator} = this.condition;
-        const props = new Map([
-            ['placeholder', ''],
-            ['type', 'text']
-        ]);
 
         const objects = [];
+        let inputType = null;
         if (hasOwn(conditionDescriptors, type)) {
             const conditionDescriptor = conditionDescriptors[type];
             objects.push(conditionDescriptor);
+            if (hasOwn(conditionDescriptor, 'type')) {
+                inputType = conditionDescriptor.type;
+            }
             if (hasOwn(conditionDescriptor.operators, operator)) {
                 const operatorDescriptor = conditionDescriptor.operators[operator];
                 objects.push(operatorDescriptor);
             }
         }
+
+        this.input.empty();
+        if (inputType === 'select') {
+            this.updateSelectElement(objects);
+        } else {
+            this.updateInputElement(objects);
+        }
+        this.inputInner.appendTo(this.input);
+        this.inputInner.on('change', this.onInputChanged.bind(this));
+
+        const {valid} = this.validateValue(this.condition.value);
+        this.inputInner.toggleClass('is-invalid', !valid);
+        this.inputInner.val(this.condition.value);
+    }
+
+    updateInputElement(objects) {
+        this.inputInner = ConditionsUI.instantiateTemplate('#condition-input-text-template');
+
+        const props = new Map([
+            ['placeholder', ''],
+            ['type', 'text']
+        ]);
 
         for (const object of objects) {
             if (hasOwn(object, 'placeholder')) {
@@ -266,12 +290,38 @@ ConditionsUI.Condition = class Condition {
         }
 
         for (const [prop, value] of props.entries()) {
-            this.input.prop(prop, value);
+            this.inputInner.prop(prop, value);
+        }
+    }
+
+    updateSelectElement(objects) {
+        this.inputInner = ConditionsUI.instantiateTemplate('#condition-input-select-template');
+
+        const data = new Map([
+            ['values', []],
+            ['defaultValue', null]
+        ]);
+
+        for (const object of objects) {
+            if (hasOwn(object, 'values')) {
+                data.set('values', object.values);
+            }
+            if (hasOwn(object, 'defaultValue')) {
+                data.set('defaultValue', object.defaultValue);
+            }
         }
 
-        const {valid} = this.validateValue(this.condition.value);
-        this.input.toggleClass('is-invalid', !valid);
-        this.input.val(this.condition.value);
+        for (const [value, text] of data.get('values')) {
+            const option = ConditionsUI.instantiateTemplate('#condition-input-option-template');
+            option.attr('value', value);
+            option.text(text);
+            option.appendTo(this.inputInner);
+        }
+
+        const defaultValue = data.get('defaultValue');
+        if (defaultValue !== null) {
+            this.inputInner.val(defaultValue);
+        }
     }
 
     validateValue(value) {
@@ -291,9 +341,9 @@ ConditionsUI.Condition = class Condition {
     }
 
     onInputChanged() {
-        const {valid, value} = this.validateValue(this.input.val());
-        this.input.toggleClass('is-invalid', !valid);
-        this.input.val(value);
+        const {valid, value} = this.validateValue(this.inputInner.val());
+        this.inputInner.toggleClass('is-invalid', !valid);
+        this.inputInner.val(value);
         this.condition.value = value;
         this.save();
     }

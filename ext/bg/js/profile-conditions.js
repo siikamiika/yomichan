@@ -105,21 +105,22 @@ const profileConditionsDescriptor = {
         name: 'Modifier Key',
         description: 'Use profile depending on the active modifier keys.',
         type: 'select',
+        defaultValue: 'alt',
         values: [
             ['alt', 'Alt'],
             ['ctrl', 'Ctrl'],
             ['meta', 'Meta'],
             ['shift', 'Shift']
         ],
-        defaultOperator: 'equal',
+        defaultOperator: 'has',
         operators: {
-            equal: {
-                name: '=',
-                test: ({modifierKeys}, optionValue) => (modifierKeys.includes(optionValue))
+            has: {
+                name: 'has',
+                test: ({modifierKeys}, optionValue) => modifierKeys.includes(optionValue)
             },
-            notEqual: {
-                name: '\u2260',
-                test: ({modifierKeys}, optionValue) => (!modifierKeys.includes(optionValue))
+            hasNot: {
+                name: 'doesn\'t have',
+                test: ({modifierKeys}, optionValue) => !modifierKeys.includes(optionValue)
             }
         }
     }
