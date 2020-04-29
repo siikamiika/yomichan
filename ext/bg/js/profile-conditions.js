@@ -116,15 +116,15 @@ const profileConditionsDescriptor = {
             }
         }
     },
-    modifierKey: {
-        name: 'Modifier Key',
+    modifierKeys: {
+        name: 'Modifier Keys',
         description: 'Use profile depending on the active modifier keys.',
         type: 'select',
         values: _profileModifierKeys,
-        defaultOperator: 'is',
+        defaultOperator: 'are',
         operators: {
-            is: {
-                name: 'is',
+            are: {
+                name: 'are',
                 placeholder: 'Press one or more modifier keys here',
                 defaultValue: '',
                 type: 'keyMulti',
@@ -137,8 +137,8 @@ const profileConditionsDescriptor = {
                     .join(' + '),
                 test: ({modifierKeys}, optionValue) => areSetsEqual(new Set(modifierKeys), new Set(optionValue))
             },
-            isNot: {
-                name: 'is not',
+            areNot: {
+                name: 'are not',
                 placeholder: 'Press one or more modifier keys here',
                 defaultValue: '',
                 type: 'keyMulti',
@@ -151,13 +151,13 @@ const profileConditionsDescriptor = {
                     .join(' + '),
                 test: ({modifierKeys}, optionValue) => !areSetsEqual(new Set(modifierKeys), new Set(optionValue))
             },
-            has: {
-                name: 'has',
+            include: {
+                name: 'include',
                 defaultValue: 'alt',
                 test: ({modifierKeys}, optionValue) => modifierKeys.includes(optionValue)
             },
-            hasNot: {
-                name: 'doesn\'t have',
+            notInclude: {
+                name: 'don\'t include',
                 defaultValue: 'alt',
                 test: ({modifierKeys}, optionValue) => !modifierKeys.includes(optionValue)
             }
