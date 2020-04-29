@@ -36,6 +36,21 @@ function _profileConditionTestDomainList(url, domainList) {
     return false;
 }
 
+const _profileModifierKeys = [
+    {optionValue: 'alt',   name: 'Alt'},
+    {optionValue: 'ctrl',  name: 'Ctrl'},
+    {optionValue: 'meta',  name: 'Meta'},
+    {optionValue: 'shift', name: 'Shift'}
+];
+
+const _profileModifierValueToName = new Map(
+    _profileModifierKeys.map(({optionValue, name}) => [optionValue, name])
+);
+
+const _profileModifierNameToValue = new Map(
+    _profileModifierKeys.map(({optionValue, name}) => [name, optionValue])
+);
+
 const profileConditionsDescriptor = {
     popupLevel: {
         name: 'Popup Level',
@@ -105,21 +120,45 @@ const profileConditionsDescriptor = {
         name: 'Modifier Key',
         description: 'Use profile depending on the active modifier keys.',
         type: 'select',
-        defaultValue: 'alt',
-        values: [
-            ['alt', 'Alt'],
-            ['ctrl', 'Ctrl'],
-            ['meta', 'Meta'],
-            ['shift', 'Shift']
-        ],
-        defaultOperator: 'has',
+        values: _profileModifierKeys,
+        defaultOperator: 'is',
         operators: {
+            is: {
+                name: 'is',
+                placeholder: 'Press one or more modifier keys here',
+                defaultValue: '',
+                type: 'keyMulti',
+                transform: (optionValue) => optionValue
+                    .split(' + ')
+                    .filter((v) => v.length > 0)
+                    .map((v) => _profileModifierNameToValue.get(v)),
+                transformReverse: (transformedOptionValue) => transformedOptionValue
+                    .map((v) => _profileModifierValueToName.get(v))
+                    .join(' + '),
+                test: ({modifierKeys}, optionValue) => areSetsEqual(new Set(modifierKeys), new Set(optionValue))
+            },
+            isNot: {
+                name: 'is not',
+                placeholder: 'Press one or more modifier keys here',
+                defaultValue: '',
+                type: 'keyMulti',
+                transform: (optionValue) => optionValue
+                    .split(' + ')
+                    .filter((v) => v.length > 0)
+                    .map((v) => _profileModifierNameToValue.get(v)),
+                transformReverse: (transformedOptionValue) => transformedOptionValue
+                    .map((v) => _profileModifierValueToName.get(v))
+                    .join(' + '),
+                test: ({modifierKeys}, optionValue) => !areSetsEqual(new Set(modifierKeys), new Set(optionValue))
+            },
             has: {
                 name: 'has',
+                defaultValue: 'alt',
                 test: ({modifierKeys}, optionValue) => modifierKeys.includes(optionValue)
             },
             hasNot: {
                 name: 'doesn\'t have',
+                defaultValue: 'alt',
                 test: ({modifierKeys}, optionValue) => !modifierKeys.includes(optionValue)
             }
         }

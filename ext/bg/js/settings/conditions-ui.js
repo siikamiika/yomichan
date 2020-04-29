@@ -16,6 +16,7 @@
  */
 
 /* global
+ * DOM
  * conditionsNormalizeOptionValue
  */
 
@@ -250,12 +251,17 @@ ConditionsUI.Condition = class Condition {
             if (hasOwn(conditionDescriptor.operators, operator)) {
                 const operatorDescriptor = conditionDescriptor.operators[operator];
                 objects.push(operatorDescriptor);
+                if (hasOwn(operatorDescriptor, 'type')) {
+                    inputType = operatorDescriptor.type;
+                }
             }
         }
 
         this.input.empty();
         if (inputType === 'select') {
             this.updateSelectElement(objects);
+        } else if (inputType === 'keyMulti') {
+            this.updateInputKeyMulti(objects);
         } else {
             this.updateInputElement(objects);
         }
@@ -294,6 +300,59 @@ ConditionsUI.Condition = class Condition {
         }
     }
 
+    updateInputKeyMulti(objects) {
+        this.updateInputElement(objects);
+        this.inputInner.prop('readonly', true);
+
+        let values = [];
+        for (const object of objects) {
+            if (hasOwn(object, 'values')) {
+                values = object.values;
+            }
+        }
+
+        const pressedKeyIndices = new Set();
+
+        const onKeyDown = ({originalEvent}) => {
+            const pressedKeyEventName = DOM.getKeyFromEvent(originalEvent);
+            if (pressedKeyEventName === 'Escape' || pressedKeyEventName === 'Backspace') {
+                pressedKeyIndices.clear();
+                this.inputInner.val('');
+                this.inputInner.change();
+                return;
+            }
+
+            const pressedModifiers = DOM.getActiveModifiers(originalEvent);
+            // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey
+            // https://askubuntu.com/questions/567731/why-is-shift-alt-being-mapped-to-meta
+            // It works with mouse events on some platforms, so try to determine if metaKey is pressed
+            if (
+                // Firefox / Linux
+                pressedKeyEventName === 'OS' ||
+                // Chrome / Linux (hack; only works when Shift and Alt are not pressed)
+                pressedKeyEventName === 'Meta' && getSetDifference(new Set(['shift', 'alt']), pressedModifiers).size !== 0
+            ) {
+                const foundIndex = values.findIndex(({optionValue}) => optionValue === 'meta');
+                if (foundIndex !== -1) {
+                    pressedKeyIndices.add(foundIndex);
+                }
+            }
+
+            for (const modifier of pressedModifiers) {
+                const foundIndex = values.findIndex(({optionValue}) => optionValue === modifier);
+                if (foundIndex !== -1) {
+                    pressedKeyIndices.add(foundIndex);
+                }
+            }
+
+            const inputValue = [...pressedKeyIndices].map((i) => values[i].name).join(' + ');
+            this.inputInner.val(inputValue);
+            this.inputInner.change();
+        };
+
+        this.inputInner.on('keydown', onKeyDown);
+    }
+
     updateSelectElement(objects) {
         this.inputInner = ConditionsUI.instantiateTemplate('#condition-input-select-template');
 
@@ -311,10 +370,10 @@ ConditionsUI.Condition = class Condition {
             }
         }
 
-        for (const [value, text] of data.get('values')) {
+        for (const {optionValue, name} of data.get('values')) {
             const option = ConditionsUI.instantiateTemplate('#condition-input-option-template');
-            option.attr('value', value);
-            option.text(text);
+            option.attr('value', optionValue);
+            option.text(name);
             option.appendTo(this.inputInner);
         }
 

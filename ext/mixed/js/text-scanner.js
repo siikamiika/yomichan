@@ -70,7 +70,7 @@ class TextScanner extends EventDispatcher {
             return;
         }
 
-        const modifiers = this.getActiveModifiers(e);
+        const modifiers = DOM.getActiveModifiers(e);
         this.trigger('updateActiveModifiers', {modifiers});
 
         const scanningOptions = this.options.scanning;
@@ -359,15 +359,6 @@ class TextScanner extends EventDispatcher {
         } else {
             this.textSourceCurrentSelected = false;
         }
-    }
-
-    getActiveModifiers(mouseEvent) {
-        const modifiers = new Set();
-        if (mouseEvent.altKey) { modifiers.add('alt'); }
-        if (mouseEvent.ctrlKey) { modifiers.add('ctrl'); }
-        if (mouseEvent.metaKey) { modifiers.add('meta'); }
-        if (mouseEvent.shiftKey) { modifiers.add('shift'); }
-        return modifiers;
     }
 
     static isScanningModifierPressed(scanningModifier, mouseEvent) {
