@@ -194,9 +194,7 @@ ConditionsUI.Condition = class Condition {
     }
 
     cleanup() {
-        if (this.inputInner !== null) {
-            this.inputInner.off('change');
-        }
+        this.inputInner.off('change');
         this.typeSelect.off('change');
         this.operatorSelect.off('change');
         this.removeButton.off('click');
