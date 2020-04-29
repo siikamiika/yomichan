@@ -257,11 +257,11 @@ ConditionsUI.Condition = class Condition {
 
         this.input.empty();
         if (inputType === 'select') {
-            this.updateSelectElement(objects);
+            this.inputInner = this.createSelectElement(objects);
         } else if (inputType === 'keyMulti') {
-            this.updateInputKeyMulti(objects);
+            this.inputInner = this.createInputKeyMultiElement(objects);
         } else {
-            this.updateInputElement(objects);
+            this.inputInner = this.createInputElement(objects);
         }
         this.inputInner.appendTo(this.input);
         this.inputInner.on('change', this.onInputChanged.bind(this));
@@ -271,8 +271,8 @@ ConditionsUI.Condition = class Condition {
         this.inputInner.val(this.condition.value);
     }
 
-    updateInputElement(objects) {
-        this.inputInner = ConditionsUI.instantiateTemplate('#condition-input-text-template');
+    createInputElement(objects) {
+        const inputInner = ConditionsUI.instantiateTemplate('#condition-input-text-template');
 
         const props = new Map([
             ['placeholder', ''],
@@ -294,13 +294,16 @@ ConditionsUI.Condition = class Condition {
         }
 
         for (const [prop, value] of props.entries()) {
-            this.inputInner.prop(prop, value);
+            inputInner.prop(prop, value);
         }
+
+        return inputInner;
     }
 
-    updateInputKeyMulti(objects) {
-        this.updateInputElement(objects);
-        this.inputInner.prop('readonly', true);
+    createInputKeyMultiElement(objects) {
+        const inputInner = this.createInputElement(objects);
+
+        inputInner.prop('readonly', true);
 
         let values = [];
         for (const object of objects) {
@@ -315,8 +318,8 @@ ConditionsUI.Condition = class Condition {
             const pressedKeyEventName = DOM.getKeyFromEvent(originalEvent);
             if (pressedKeyEventName === 'Escape' || pressedKeyEventName === 'Backspace') {
                 pressedKeyIndices.clear();
-                this.inputInner.val('');
-                this.inputInner.change();
+                inputInner.val('');
+                inputInner.change();
                 return;
             }
 
@@ -344,15 +347,17 @@ ConditionsUI.Condition = class Condition {
             }
 
             const inputValue = [...pressedKeyIndices].map((i) => values[i].name).join(' + ');
-            this.inputInner.val(inputValue);
-            this.inputInner.change();
+            inputInner.val(inputValue);
+            inputInner.change();
         };
 
-        this.inputInner.on('keydown', onKeyDown);
+        inputInner.on('keydown', onKeyDown);
+
+        return inputInner;
     }
 
-    updateSelectElement(objects) {
-        this.inputInner = ConditionsUI.instantiateTemplate('#condition-input-select-template');
+    createSelectElement(objects) {
+        const inputInner = ConditionsUI.instantiateTemplate('#condition-input-select-template');
 
         const data = new Map([
             ['values', []],
@@ -372,13 +377,15 @@ ConditionsUI.Condition = class Condition {
             const option = ConditionsUI.instantiateTemplate('#condition-input-option-template');
             option.attr('value', optionValue);
             option.text(name);
-            option.appendTo(this.inputInner);
+            option.appendTo(inputInner);
         }
 
         const defaultValue = data.get('defaultValue');
         if (defaultValue !== null) {
-            this.inputInner.val(defaultValue);
+            inputInner.val(defaultValue);
         }
+
+        return inputInner;
     }
 
     validateValue(value) {
