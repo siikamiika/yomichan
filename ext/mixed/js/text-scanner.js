@@ -71,7 +71,7 @@ class TextScanner extends EventDispatcher {
         }
 
         const modifiers = DOM.getActiveModifiers(e);
-        this.trigger('updateActiveModifiers', {modifiers});
+        this.trigger('activeModifiersChanged', {modifiers});
 
         const scanningOptions = this.options.scanning;
         const scanningModifier = scanningOptions.modifier;

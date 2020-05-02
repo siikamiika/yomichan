@@ -93,7 +93,7 @@ class Frontend {
             chrome.runtime.onMessage.addListener(this.onRuntimeMessage.bind(this));
 
             this._textScanner.on('clearSelection', this.onClearSelection.bind(this));
-            this._textScanner.on('updateActiveModifiers', this.onUpdateActiveModifiers.bind(this));
+            this._textScanner.on('activeModifiersChanged', this.onActiveModifiersChanged.bind(this));
 
             this._updateContentScale();
             this._broadcastRootPopupInformation();
@@ -270,7 +270,7 @@ class Frontend {
         this.updatePendingOptions();
     }
 
-    async onUpdateActiveModifiers({modifiers}) {
+    async onActiveModifiersChanged({modifiers}) {
         if (areSetsEqual(modifiers, this._activeModifiers)) { return; }
         this._activeModifiers = modifiers;
         if (await this.popup.isVisible()) {
