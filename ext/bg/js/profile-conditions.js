@@ -39,9 +39,12 @@ function _profileConditionTestDomainList(url, domainList) {
 const _profileModifierKeys = [
     {optionValue: 'alt',   name: 'Alt'},
     {optionValue: 'ctrl',  name: 'Ctrl'},
-    {optionValue: 'meta',  name: 'Meta'},
     {optionValue: 'shift', name: 'Shift'}
 ];
+
+if (!hasOwn(window, 'netscape')) {
+    _profileModifierKeys.push({optionValue: 'meta',  name: 'Meta'});
+}
 
 const _profileModifierValueToName = new Map(
     _profileModifierKeys.map(({optionValue, name}) => [optionValue, name])
