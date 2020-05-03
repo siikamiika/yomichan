@@ -122,7 +122,6 @@ const profileConditionsDescriptor = {
     modifierKeys: {
         name: 'Modifier Keys',
         description: 'Use profile depending on the active modifier keys.',
-        type: 'select',
         values: _profileModifierKeys,
         defaultOperator: 'are',
         operators: {
@@ -156,11 +155,13 @@ const profileConditionsDescriptor = {
             },
             include: {
                 name: 'include',
+                type: 'select',
                 defaultValue: 'alt',
                 test: ({modifierKeys}, optionValue) => modifierKeys.includes(optionValue)
             },
             notInclude: {
                 name: 'don\'t include',
+                type: 'select',
                 defaultValue: 'alt',
                 test: ({modifierKeys}, optionValue) => !modifierKeys.includes(optionValue)
             }
