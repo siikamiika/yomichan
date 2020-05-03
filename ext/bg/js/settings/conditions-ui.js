@@ -327,16 +327,13 @@ ConditionsUI.Condition = class Condition {
             // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey
             // https://askubuntu.com/questions/567731/why-is-shift-alt-being-mapped-to-meta
             // It works with mouse events on some platforms, so try to determine if metaKey is pressed
-            if (
-                // Firefox / Linux
-                pressedKeyEventName === 'OS' ||
-                // Chrome / Linux (hack; only works when Shift and Alt are not pressed)
-                pressedKeyEventName === 'Meta' && getSetDifference(new Set(['shift', 'alt']), pressedModifiers).size !== 0
-            ) {
-                const foundIndex = values.findIndex(({optionValue}) => optionValue === 'meta');
-                if (foundIndex !== -1) {
-                    pressedKeyIndices.add(foundIndex);
-                }
+            // hack; only works when Shift and Alt are not pressed
+            const isMetaKeyChrome = (
+                pressedKeyEventName === 'Meta' &&
+                getSetDifference(new Set(['shift', 'alt']), pressedModifiers).size !== 0
+            );
+            if (isMetaKeyChrome) {
+                pressedModifiers.add('meta');
             }
 
             for (const modifier of pressedModifiers) {
