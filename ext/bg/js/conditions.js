@@ -25,10 +25,12 @@ function conditionsValidateOptionValue(object, value, isInput=false) {
         value = object.transformInput(value);
     } else if (hasOwn(object, 'transform')) {
         value = object.transform(value);
+    } else {
+        return value;
+    }
 
-        if (hasOwn(object, 'validateTransformed') && !object.validateTransformed(value)) {
-            throw new Error('Invalid value for condition');
-        }
+    if (hasOwn(object, 'validateTransformed') && !object.validateTransformed(value)) {
+        throw new Error('Invalid value for condition');
     }
 
     return value;
