@@ -318,21 +318,26 @@ class TextScanner extends EventDispatcher {
         }
     }
 
-    setTextSourceScanLength(textSource, length) {
+    getTextSourceContent(textSource, length) {
+        const originalLength = textSource.text().length;
+
         textSource.setEndOffset(length);
-        if (this.ignoreNodes === null || !textSource.range) {
-            return;
+
+        if (this.ignoreNodes !== null && textSource.range) {
+            length = textSource.text().length;
+            while (textSource.range && length > 0) {
+                const nodes = TextSourceRange.getNodesInRange(textSource.range);
+                if (!TextSourceRange.anyNodeMatchesSelector(nodes, this.ignoreNodes)) {
+                    break;
+                }
+                --length;
+                textSource.setEndOffset(length);
+            }
         }
 
-        length = textSource.text().length;
-        while (textSource.range && length > 0) {
-            const nodes = TextSourceRange.getNodesInRange(textSource.range);
-            if (!TextSourceRange.anyNodeMatchesSelector(nodes, this.ignoreNodes)) {
-                break;
-            }
-            --length;
-            textSource.setEndOffset(length);
-        }
+        const content = textSource.text();
+        textSource.setEndOffset(originalLength);
+        return content;
     }
 
     clearSelection(passive) {
