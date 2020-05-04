@@ -59,10 +59,11 @@ function conditionsNormalizeOptionValue(descriptors, type, operator, optionValue
     let inputTransformedValue = null;
     if (isInput) {
         for (const descriptor of descriptorArray) {
-            inputTransformedValue = conditionsValidateOptionInputValue(
-                descriptor,
-                inputTransformedValue !== null ? inputTransformedValue : transformedValue
-            );
+            let value = inputTransformedValue !== null ? inputTransformedValue : transformedValue;
+            value = conditionsValidateOptionInputValue(descriptor, value);
+            if (value !== null) {
+                inputTransformedValue = value;
+            }
         }
 
         if (inputTransformedValue !== null) {
