@@ -270,7 +270,7 @@ ConditionsUI.Condition = class Condition {
         this.inputInner.appendTo(this.input);
         this.inputInner.on('change', this.onInputChanged.bind(this));
 
-        const {valid, value} = this.validateConditionValue(this.condition.value);
+        const {valid, value} = this.validateValue(this.condition.value);
         this.inputInner.toggleClass('is-invalid', !valid);
         this.inputInner.val(value);
     }
@@ -389,7 +389,7 @@ ConditionsUI.Condition = class Condition {
         return inputInner;
     }
 
-    validateConditionValue(value, isInput=false) {
+    validateValue(value, isInput=false) {
         const conditionDescriptors = this.parent.parent.conditionDescriptors;
         let valid = true;
         let transformedValue = value;
@@ -408,7 +408,7 @@ ConditionsUI.Condition = class Condition {
     }
 
     onInputChanged() {
-        const {valid, value, transformedValue} = this.validateConditionValue(this.inputInner.val(), true);
+        const {valid, value, transformedValue} = this.validateValue(this.inputInner.val(), true);
         this.inputInner.toggleClass('is-invalid', !valid);
         this.inputInner.val(value);
         this.condition.value = transformedValue;
