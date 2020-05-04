@@ -21,19 +21,21 @@ function conditionsValidateOptionValue(object, value, isInput=false) {
         throw new Error('Invalid value for condition');
     }
 
+    let hasTransformInput = false;
     if (isInput && hasOwn(object, 'transformInput')) {
         value = object.transformInput(value);
+        hasTransformInput = true;
     } else if (hasOwn(object, 'transform')) {
         value = object.transform(value);
     } else {
-        return value;
+        return [value, hasTransformInput];
     }
 
     if (hasOwn(object, 'validateTransformed') && !object.validateTransformed(value)) {
         throw new Error('Invalid value for condition');
     }
 
-    return value;
+    return [value, hasTransformInput];
 }
 
 function conditionsNormalizeOptionValue(descriptors, type, operator, optionValue, isInput) {
@@ -48,12 +50,20 @@ function conditionsNormalizeOptionValue(descriptors, type, operator, optionValue
 
     const operatorDescriptor = conditionDescriptor.operators[operator];
 
-    let transformedValue = conditionsValidateOptionValue(conditionDescriptor, optionValue, isInput);
-    transformedValue = conditionsValidateOptionValue(operatorDescriptor, transformedValue, isInput);
+    let transformedValue = optionValue;
+    let hasTransformInput = false;
+    let hasTransformInputLoop;
+    for (const descriptor of [conditionDescriptor, operatorDescriptor]) {
+        [transformedValue, hasTransformInputLoop] = conditionsValidateOptionValue(descriptor, transformedValue, isInput);
+        if (!hasTransformInput) { hasTransformInput = hasTransformInputLoop; }
+    }
 
     let transformReversedValue = transformedValue;
     if (hasOwn(operatorDescriptor, 'transformReverse')) {
         transformReversedValue = operatorDescriptor.transformReverse(transformedValue);
+    }
+    if (!hasTransformInput) {
+        transformedValue = transformReversedValue;
     }
     return [transformReversedValue, transformedValue];
 }
