@@ -392,9 +392,9 @@ ConditionsUI.Condition = class Condition {
     validateValue(value, isInput=false) {
         const conditionDescriptors = this.parent.parent.conditionDescriptors;
         let valid = true;
-        let transformedValue = value;
+        let inputTransformedValue = null;
         try {
-            [value, transformedValue] = conditionsNormalizeOptionValue(
+            [value, inputTransformedValue] = conditionsNormalizeOptionValue(
                 conditionDescriptors,
                 this.condition.type,
                 this.condition.operator,
@@ -404,14 +404,14 @@ ConditionsUI.Condition = class Condition {
         } catch (e) {
             valid = false;
         }
-        return {valid, value, transformedValue};
+        return {valid, value, inputTransformedValue};
     }
 
     onInputChanged() {
-        const {valid, value, transformedValue} = this.validateValue(this.inputInner.val(), true);
+        const {valid, value, inputTransformedValue} = this.validateValue(this.inputInner.val(), true);
         this.inputInner.toggleClass('is-invalid', !valid);
         this.inputInner.val(value);
-        this.condition.value = transformedValue;
+        this.condition.value = inputTransformedValue !== null ? inputTransformedValue : value;
         this.save();
     }
 

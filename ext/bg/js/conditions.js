@@ -16,26 +16,28 @@
  */
 
 
-function conditionsValidateOptionValue(object, value, isInput=false) {
+function conditionsValidateOptionValue(object, value) {
     if (hasOwn(object, 'validate') && !object.validate(value)) {
         throw new Error('Invalid value for condition');
     }
 
-    let hasTransformInput = false;
-    if (isInput && hasOwn(object, 'transformInput')) {
-        value = object.transformInput(value);
-        hasTransformInput = true;
-    } else if (hasOwn(object, 'transform')) {
+    if (hasOwn(object, 'transform')) {
         value = object.transform(value);
-    } else {
-        return [value, hasTransformInput];
+
+        if (hasOwn(object, 'validateTransformed') && !object.validateTransformed(value)) {
+            throw new Error('Invalid value for condition');
+        }
     }
 
-    if (hasOwn(object, 'validateTransformed') && !object.validateTransformed(value)) {
-        throw new Error('Invalid value for condition');
+    return value;
+}
+
+function conditionsValidateOptionInputValue(object, value) {
+    if (hasOwn(object, 'transformInput')) {
+        return object.transformInput(value);
     }
 
-    return [value, hasTransformInput];
+    return null;
 }
 
 function conditionsNormalizeOptionValue(descriptors, type, operator, optionValue, isInput) {
@@ -50,22 +52,33 @@ function conditionsNormalizeOptionValue(descriptors, type, operator, optionValue
 
     const operatorDescriptor = conditionDescriptor.operators[operator];
 
+    const descriptorArray = [conditionDescriptor, operatorDescriptor];
+
     let transformedValue = optionValue;
-    let hasTransformInput = false;
-    let hasTransformInputLoop;
-    for (const descriptor of [conditionDescriptor, operatorDescriptor]) {
-        [transformedValue, hasTransformInputLoop] = conditionsValidateOptionValue(descriptor, transformedValue, isInput);
-        if (!hasTransformInput) { hasTransformInput = hasTransformInputLoop; }
+
+    let inputTransformedValue = null;
+    if (isInput) {
+        for (const descriptor of descriptorArray) {
+            inputTransformedValue = conditionsValidateOptionInputValue(
+                descriptor,
+                inputTransformedValue !== null ? inputTransformedValue : transformedValue
+            );
+        }
+
+        if (inputTransformedValue !== null) {
+            transformedValue = inputTransformedValue;
+        }
     }
 
-    let transformReversedValue = transformedValue;
+    for (const descriptor of descriptorArray) {
+        transformedValue = conditionsValidateOptionValue(descriptor, transformedValue);
+    }
+
     if (hasOwn(operatorDescriptor, 'transformReverse')) {
-        transformReversedValue = operatorDescriptor.transformReverse(transformedValue);
+        transformedValue = operatorDescriptor.transformReverse(transformedValue);
     }
-    if (!hasTransformInput) {
-        transformedValue = transformReversedValue;
-    }
-    return [transformReversedValue, transformedValue];
+
+    return [transformedValue, inputTransformedValue];
 }
 
 function conditionsTestValueThrowing(descriptors, type, operator, optionValue, value) {
