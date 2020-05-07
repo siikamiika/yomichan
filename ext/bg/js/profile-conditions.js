@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* global
+ * Environment
+ */
 
 function _profileConditionTestDomain(urlDomain, domain) {
     return (
@@ -39,54 +42,12 @@ function _profileConditionTestDomainList(url, domainList) {
 let profileConditionsDescriptor = null;
 
 const profileConditionsDescriptorPromise = (async () => {
-    const {os} = await new Promise((resolve) => chrome.runtime.getPlatformInfo(resolve));
+    const environment = new Environment();
+    await environment.prepare();
 
-    const windowsModifierKeys = [
-        ['alt', 'Alt'],
-        ['ctrl', 'Ctrl'],
-        ['shift', 'Shift'],
-        ['meta', 'Windows']
-    ];
-
-    const macModifierKeys = [
-        ['alt', 'Option'],
-        ['ctrl', 'Control'],
-        ['shift', 'Shift'],
-        ['meta', 'Command']
-    ];
-
-    const linuxModifierKeys = [
-        ['alt', 'Alt'],
-        ['ctrl', 'Ctrl'],
-        ['shift', 'Shift'],
-        ['meta', 'Super']
-    ];
-
-    let osModifierKeys;
-    switch (os) {
-        case 'win':
-            osModifierKeys = windowsModifierKeys;
-            break;
-        case 'mac':
-            osModifierKeys = macModifierKeys;
-            break;
-        case 'linux':
-        case 'openbsd':
-        case 'cros':
-        case 'android':
-            osModifierKeys = linuxModifierKeys;
-            break;
-        default:
-            throw new Error('Invalid OS');
-    }
-
-    const isFirefox = hasOwn(window, 'netscape');
-    const modifierKeyValues = [];
-
-    for (const [optionValue, name] of osModifierKeys) {
-        if (optionValue === 'meta' && isFirefox && os !== 'mac') { continue; }
-        modifierKeyValues.push({optionValue, name});
-    }
+    const modifierKeyValues = environment.getInfo().modifierKeys.map(
+        ({value, name}) => ({optionValue: value, name})
+    );
 
     const modifierValueToName = new Map(
         modifierKeyValues.map(({optionValue, name}) => [optionValue, name])
