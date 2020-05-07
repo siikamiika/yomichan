@@ -16,6 +16,7 @@
  */
 
 /* global
+ * Environment
  * ankiErrorShown
  * ankiFieldsToDict
  * ankiInitialize
@@ -285,6 +286,25 @@ function showExtensionInformation() {
     node.textContent = `${manifest.name} v${manifest.version}`;
 }
 
+async function settingsPopulateModifierKeys() {
+    const environment = new Environment();
+    await environment.prepare();
+
+    const scanModifierKeySelect = document.querySelector('#scan-modifier-key');
+    scanModifierKeySelect.textContent = '';
+
+    const modifierKeys = [
+        {value: 'none', name: 'None'},
+        ...environment.getInfo().modifierKeys
+    ];
+    for (const {value, name} of modifierKeys) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = name;
+        scanModifierKeySelect.appendChild(option);
+    }
+}
+
 
 async function onReady() {
     apiForwardLogsToBackend();
@@ -292,6 +312,7 @@ async function onReady() {
 
     showExtensionInformation();
 
+    await settingsPopulateModifierKeys();
     formSetupEventListeners();
     appearanceInitialize();
     await audioSettingsInitialize();
