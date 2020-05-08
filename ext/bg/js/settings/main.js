@@ -16,13 +16,13 @@
  */
 
 /* global
- * Environment
  * ankiErrorShown
  * ankiFieldsToDict
  * ankiInitialize
  * ankiTemplatesInitialize
  * ankiTemplatesUpdateValue
  * apiForwardLogsToBackend
+ * apiGetEnvironmentInfo
  * apiOptionsSave
  * appearanceInitialize
  * audioSettingsInitialize
@@ -287,15 +287,13 @@ function showExtensionInformation() {
 }
 
 async function settingsPopulateModifierKeys() {
-    const environment = new Environment();
-    await environment.prepare();
-
     const scanModifierKeySelect = document.querySelector('#scan-modifier-key');
     scanModifierKeySelect.textContent = '';
 
+    const environment = await apiGetEnvironmentInfo();
     const modifierKeys = [
         {value: 'none', name: 'None'},
-        ...environment.getInfo().modifierKeys
+        ...environment.modifierKeys
     ];
     for (const {value, name} of modifierKeys) {
         const option = document.createElement('option');
