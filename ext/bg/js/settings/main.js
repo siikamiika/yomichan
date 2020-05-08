@@ -293,7 +293,7 @@ async function settingsPopulateModifierKeys() {
     const environment = await apiGetEnvironmentInfo();
     const modifierKeys = [
         {value: 'none', name: 'None'},
-        ...environment.modifierKeys
+        ...environment.modifiers.keys
     ];
     for (const {value, name} of modifierKeys) {
         const option = document.createElement('option');

@@ -33,13 +33,13 @@ class Environment {
     async _loadEnvironmentInfo() {
         const browser = await this._getBrowser();
         const platform = await new Promise((resolve) => chrome.runtime.getPlatformInfo(resolve));
-        const modifierKeys = this._getModifierKeys(browser, platform.os);
+        const modifierInfo = this._getModifierInfo(browser, platform.os);
         return {
             browser,
             platform: {
                 os: platform.os
             },
-            modifierKeys
+            modifiers: modifierInfo
         };
     }
 
@@ -62,9 +62,11 @@ class Environment {
         }
     }
 
-    _getModifierKeys(browser, os) {
+    _getModifierInfo(browser, os) {
         let osModifierKeys;
+        let osModifierSeparator;
         if (os === 'win') {
+            osModifierSeparator = ' + ';
             osModifierKeys = [
                 ['alt', 'Alt'],
                 ['ctrl', 'Ctrl'],
@@ -72,13 +74,15 @@ class Environment {
                 ['meta', 'Windows']
             ];
         } else if (os === 'mac') {
+            osModifierSeparator = '';
             osModifierKeys = [
-                ['alt', 'Option'],
-                ['ctrl', 'Control'],
-                ['shift', 'Shift'],
-                ['meta', 'Command']
+                ['alt', '⌥'],
+                ['ctrl', '⌃'],
+                ['shift', '⇧'],
+                ['meta', '⌘']
             ];
         } else if (os === 'linux' || os === 'openbsd' || os === 'cros' || os === 'android') {
+            osModifierSeparator = ' + ';
             osModifierKeys = [
                 ['alt', 'Alt'],
                 ['ctrl', 'Ctrl'],
@@ -98,6 +102,6 @@ class Environment {
             modifierKeys.push({value, name});
         }
 
-        return modifierKeys;
+        return {keys: modifierKeys, separator: osModifierSeparator};
     }
 }

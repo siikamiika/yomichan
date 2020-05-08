@@ -45,7 +45,9 @@ const profileConditionsDescriptorPromise = (async () => {
     const environment = new Environment();
     await environment.prepare();
 
-    const modifierKeyValues = environment.getInfo().modifierKeys.map(
+    const modifiers = environment.getInfo().modifiers;
+    const modifierSeparator = modifiers.separator;
+    const modifierKeyValues = modifiers.keys.map(
         ({value, name}) => ({optionValue: value, name})
     );
 
@@ -134,12 +136,12 @@ const profileConditionsDescriptorPromise = (async () => {
                     defaultValue: [],
                     type: 'keyMulti',
                     transformInput: (optionValue) => optionValue
-                        .split(' + ')
+                        .split(modifierSeparator)
                         .filter((v) => v.length > 0)
                         .map((v) => modifierNameToValue.get(v)),
                     transformReverse: (transformedOptionValue) => transformedOptionValue
                         .map((v) => modifierValueToName.get(v))
-                        .join(' + '),
+                        .join(modifierSeparator),
                     test: ({modifierKeys}, optionValue) => areSetsEqual(new Set(modifierKeys), new Set(optionValue))
                 },
                 areNot: {
@@ -148,12 +150,12 @@ const profileConditionsDescriptorPromise = (async () => {
                     defaultValue: [],
                     type: 'keyMulti',
                     transformInput: (optionValue) => optionValue
-                        .split(' + ')
+                        .split(modifierSeparator)
                         .filter((v) => v.length > 0)
                         .map((v) => modifierNameToValue.get(v)),
                     transformReverse: (transformedOptionValue) => transformedOptionValue
                         .map((v) => modifierValueToName.get(v))
-                        .join(' + '),
+                        .join(modifierSeparator),
                     test: ({modifierKeys}, optionValue) => !areSetsEqual(new Set(modifierKeys), new Set(optionValue))
                 },
                 include: {
