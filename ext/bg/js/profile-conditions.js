@@ -135,6 +135,7 @@ const profileConditionsDescriptorPromise = (async () => {
                     placeholder: 'Press one or more modifier keys here',
                     defaultValue: [],
                     type: 'keyMulti',
+                    keySeparator: modifierSeparator,
                     transformInput: (optionValue) => optionValue
                         .split(modifierSeparator)
                         .filter((v) => v.length > 0)
@@ -149,6 +150,7 @@ const profileConditionsDescriptorPromise = (async () => {
                     placeholder: 'Press one or more modifier keys here',
                     defaultValue: [],
                     type: 'keyMulti',
+                    keySeparator: modifierSeparator,
                     transformInput: (optionValue) => optionValue
                         .split(modifierSeparator)
                         .filter((v) => v.length > 0)
