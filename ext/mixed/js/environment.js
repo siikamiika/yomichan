@@ -63,12 +63,12 @@ class Environment {
     }
 
     _getModifierInfo(browser, os) {
-        let osModifierKeys;
-        let osModifierSeparator;
+        let osKeys;
+        let separator;
         switch (os) {
             case 'win':
-                osModifierSeparator = ' + ';
-                osModifierKeys = [
+                separator = ' + ';
+                osKeys = [
                     ['alt', 'Alt'],
                     ['ctrl', 'Ctrl'],
                     ['shift', 'Shift'],
@@ -76,8 +76,8 @@ class Environment {
                 ];
                 break;
             case 'mac':
-                osModifierSeparator = '';
-                osModifierKeys = [
+                separator = '';
+                osKeys = [
                     ['alt', '⌥'],
                     ['ctrl', '⌃'],
                     ['shift', '⇧'],
@@ -88,8 +88,8 @@ class Environment {
             case 'openbsd':
             case 'cros':
             case 'android':
-                osModifierSeparator = ' + ';
-                osModifierKeys = [
+                separator = ' + ';
+                osKeys = [
                     ['alt', 'Alt'],
                     ['ctrl', 'Ctrl'],
                     ['shift', 'Shift'],
@@ -101,14 +101,14 @@ class Environment {
         }
 
         const isFirefox = (browser === 'firefox' || browser === 'firefox-mobile');
-        const modifierKeys = [];
+        const keys = [];
 
-        for (const [value, name] of osModifierKeys) {
+        for (const [value, name] of osKeys) {
             // Firefox doesn't support event.metaKey on platforms other than macOS
             if (value === 'meta' && isFirefox && os !== 'mac') { continue; }
-            modifierKeys.push({value, name});
+            keys.push({value, name});
         }
 
-        return {keys: modifierKeys, separator: osModifierSeparator};
+        return {keys, separator};
     }
 }
