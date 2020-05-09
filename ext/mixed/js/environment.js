@@ -65,32 +65,39 @@ class Environment {
     _getModifierInfo(browser, os) {
         let osModifierKeys;
         let osModifierSeparator;
-        if (os === 'win') {
-            osModifierSeparator = ' + ';
-            osModifierKeys = [
-                ['alt', 'Alt'],
-                ['ctrl', 'Ctrl'],
-                ['shift', 'Shift'],
-                ['meta', 'Windows']
-            ];
-        } else if (os === 'mac') {
-            osModifierSeparator = '';
-            osModifierKeys = [
-                ['alt', '⌥'],
-                ['ctrl', '⌃'],
-                ['shift', '⇧'],
-                ['meta', '⌘']
-            ];
-        } else if (os === 'linux' || os === 'openbsd' || os === 'cros' || os === 'android') {
-            osModifierSeparator = ' + ';
-            osModifierKeys = [
-                ['alt', 'Alt'],
-                ['ctrl', 'Ctrl'],
-                ['shift', 'Shift'],
-                ['meta', 'Super']
-            ];
-        } else {
-            throw new Error('Invalid OS');
+        switch (os) {
+            case 'win':
+                osModifierSeparator = ' + ';
+                osModifierKeys = [
+                    ['alt', 'Alt'],
+                    ['ctrl', 'Ctrl'],
+                    ['shift', 'Shift'],
+                    ['meta', 'Windows']
+                ];
+                break;
+            case 'mac':
+                osModifierSeparator = '';
+                osModifierKeys = [
+                    ['alt', '⌥'],
+                    ['ctrl', '⌃'],
+                    ['shift', '⇧'],
+                    ['meta', '⌘']
+                ];
+                break;
+            case 'linux':
+            case 'openbsd':
+            case 'cros':
+            case 'android':
+                osModifierSeparator = ' + ';
+                osModifierKeys = [
+                    ['alt', 'Alt'],
+                    ['ctrl', 'Ctrl'],
+                    ['shift', 'Shift'],
+                    ['meta', 'Super']
+                ];
+                break;
+            default:
+                throw new Error(`Invalid OS: ${os}`);
         }
 
         const isFirefox = (browser === 'firefox' || browser === 'firefox-mobile');
