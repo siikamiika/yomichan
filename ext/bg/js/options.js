@@ -117,18 +117,18 @@ const profileOptionsVersionUpdates = [
 
         const replacements = [
             [
-                '{{#*inline "audio"}}\n    {{~#if definition.audioFileName~}}\n        [sound:{{definition.audioFileName}}]\n    {{~/if~}}\n{{/inline}}',
-                new RegExp(escapeRegExp('{{#*inline "audio"}}{{/inline}}'), 'g')
+                '{{#*inline "audio"}}{{/inline}}',
+                '{{#*inline "audio"}}\n    {{~#if definition.audioFileName~}}\n        [sound:{{definition.audioFileName}}]\n    {{~/if~}}\n{{/inline}}'
             ],
             [
-                '{{#*inline "tags"}}\n    {{~#mergeTags definition group merge}}{{this}}{{/mergeTags~}}\n{{/inline}}',
-                new RegExp(escapeRegExp('{{#*inline "tags"}}\n    {{~#each definition.definitionTags}}{{name}}{{#unless @last}}, {{/unless}}{{/each~}}\n{{/inline}}'), 'g')
+                '{{#*inline "tags"}}\n    {{~#each definition.definitionTags}}{{name}}{{#unless @last}}, {{/unless}}{{/each~}}\n{{/inline}}',
+                '{{#*inline "tags"}}\n    {{~#mergeTags definition group merge}}{{this}}{{/mergeTags~}}\n{{/inline}}'
             ]
         ];
 
-        for (const [replacement, pattern] of replacements) {
+        for (const [pattern, replacement] of replacements) {
             let replaced = false;
-            fieldTemplates = fieldTemplates.replace(pattern, () => {
+            fieldTemplates = fieldTemplates.replace(new RegExp(escapeRegExp(pattern), 'g'), () => {
                 replaced = true;
                 return replacement;
             });
