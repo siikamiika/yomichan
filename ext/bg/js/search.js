@@ -298,7 +298,6 @@ class DisplaySearch extends Display {
 
     async updateOptions() {
         await super.updateOptions();
-        this.queryParser.setOptions(this.options);
         if (!this._isPrepared) { return; }
         const query = this.query.value;
         if (query) {

@@ -25,7 +25,7 @@
 class QueryParser {
     constructor({getOptionsContext, setContent, setSpinnerVisible}) {
         this._options = null;
-        this._getOptionsContext = getOptionsContext;
+        this._getOptionsContextParent = getOptionsContext;
         this._setContent = setContent;
         this._setSpinnerVisible = setSpinnerVisible;
         this._parseResults = [];
@@ -42,14 +42,10 @@ class QueryParser {
 
     async prepare() {
         await this._queryParserGenerator.prepare();
+        await this._updateOptions();
+        yomichan.on('optionsUpdated', () => this._updateOptions());
+        this._textScanner.on('activeModifiersChanged', this._onActiveModifiersChanged.bind(this));
         this._queryParser.addEventListener('click', this._onClick.bind(this));
-    }
-
-    setOptions(options) {
-        this._options = options;
-        this._textScanner.setOptions(options);
-        this._textScanner.setEnabled(true);
-        this._queryParser.dataset.termSpacing = `${options.parsing.termSpacing}`;
     }
 
     async setText(text) {
@@ -67,6 +63,19 @@ class QueryParser {
     }
 
     // Private
+
+    async _updateOptions() {
+        this._options = await api.optionsGet(this._getOptionsContext());
+        this._textScanner.setOptions(this._options);
+        this._textScanner.setEnabled(true);
+        this._queryParser.dataset.termSpacing = `${this._options.parsing.termSpacing}`;
+    }
+
+    _getOptionsContext() {
+        const {depth, url} = this._getOptionsContextParent();
+        const modifierKeys = [...this._textScanner.activeModifiers];
+        return {depth, url, modifierKeys};
+    }
 
     _onClick(e) {
         this._textScanner.searchAt(e.clientX, e.clientY, 'click');
@@ -93,6 +102,10 @@ class QueryParser {
         }});
 
         return {definitions, type: 'terms'};
+    }
+
+    async _onActiveModifiersChanged() {
+        await this._updateOptions();
     }
 
     _onParserChange(e) {
