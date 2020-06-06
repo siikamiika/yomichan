@@ -46,6 +46,7 @@ class TextScanner extends EventDispatcher {
         this._preventNextMouseDown = false;
         this._preventNextClick = false;
         this._preventScroll = false;
+        this._activeModifiers = new Set();
 
         this._canClearSelection = true;
     }
@@ -60,6 +61,10 @@ class TextScanner extends EventDispatcher {
 
     get ignoreNodes() {
         return this._ignoreNodes;
+    }
+
+    get activeModifiers() {
+        return this._activeModifiers;
     }
 
     set ignoreNodes(value) {
@@ -181,7 +186,10 @@ class TextScanner extends EventDispatcher {
         }
 
         const modifiers = DOM.getActiveModifiers(e);
-        this.trigger('activeModifiersChanged', {modifiers});
+        if (!areSetsEqual(modifiers, this._activeModifiers)) {
+            this._activeModifiers = modifiers;
+            this.trigger('activeModifiersChanged');
+        }
 
         const scanningOptions = this._options.scanning;
         const scanningModifier = scanningOptions.modifier;

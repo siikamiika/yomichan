@@ -33,7 +33,6 @@ class Frontend {
         this._orphaned = false;
         this._lastShowPromise = Promise.resolve();
         this._enabledEventListeners = new EventListenerCollection();
-        this._activeModifiers = new Set();
         this._optionsUpdatePending = false;
         this._textScanner = new TextScanner({
             node: window,
@@ -110,7 +109,7 @@ class Frontend {
     async getOptionsContext() {
         const url = this._getUrl !== null ? await this._getUrl() : window.location.href;
         const depth = this._popup.depth;
-        const modifierKeys = [...this._activeModifiers];
+        const modifierKeys = [...this._textScanner.activeModifiers];
         return {depth, url, modifierKeys};
     }
 
@@ -209,9 +208,7 @@ class Frontend {
         this._updatePendingOptions();
     }
 
-    async _onActiveModifiersChanged({modifiers}) {
-        if (areSetsEqual(modifiers, this._activeModifiers)) { return; }
-        this._activeModifiers = modifiers;
+    async _onActiveModifiersChanged() {
         if (await this._popup.isVisible()) {
             this._optionsUpdatePending = true;
             return;
